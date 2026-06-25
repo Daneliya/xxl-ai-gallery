@@ -1,0 +1,2171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 绘画作品集</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card-bg: #13131a;
+            --card-hover: #1a1a24;
+            --text: #e4e4e8;
+            --text-secondary: #90909c;
+            --border: #1e1e2a;
+            --accent: #a78bfa;
+            --accent-glow: rgba(167, 139, 250, 0.15);
+            --tag-bg: #1e1e30;
+            --tag-text: #c4b5fd;
+            --modal-bg: rgba(0, 0, 0, 0.92);
+            --scrollbar-thumb: #2a2a3a;
+            --radius: 14px;
+            --radius-sm: 8px;
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(0, 0, 0, 0.2);
+            --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4), 0 12px 40px rgba(0, 0, 0, 0.3);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --img-bg: #0d0d15;
+            --img-placeholder-color: #2a2a3a;
+            --header-bg: rgba(10, 10, 15, 0.78);
+            --prompt-bg: #0a0a14;
+            --prompt-text: #d4d4dc;
+            --toast-bg: #27273a;
+            --toast-border: #3a3a50;
+            --toast-color: #e4e4e8;
+            --nav-btn-bg: rgba(0, 0, 0, 0.6);
+            --nav-btn-border: rgba(255, 255, 255, 0.1);
+            --nav-btn-hover: rgba(255, 255, 255, 0.2);
+            --card-hover-border: #2a2a40;
+            --input-bg: #0d0d18;
+            --input-border: #2a2a3a;
+        }
+
+        /* 白天主题 */
+        [data-theme="light"] {
+            --bg: #f5f5f8;
+            --card-bg: #ffffff;
+            --card-hover: #f0f0f5;
+            --text: #1a1a24;
+            --text-secondary: #6b6b78;
+            --border: #e0e0e8;
+            --accent: #7c3aed;
+            --accent-glow: rgba(124, 58, 237, 0.12);
+            --tag-bg: #ede9fe;
+            --tag-text: #6d28d9;
+            --modal-bg: rgba(0, 0, 0, 0.5);
+            --scrollbar-thumb: #c8c8d4;
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+            --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1), 0 12px 32px rgba(0, 0, 0, 0.06);
+            --img-bg: #e8e8ee;
+            --img-placeholder-color: #c8c8d4;
+            --header-bg: rgba(245, 245, 248, 0.78);
+            --prompt-bg: #f0f0f5;
+            --prompt-text: #333340;
+            --toast-bg: #ffffff;
+            --toast-border: #e0e0e8;
+            --toast-color: #1a1a24;
+            --nav-btn-bg: rgba(255, 255, 255, 0.8);
+            --nav-btn-border: rgba(0, 0, 0, 0.1);
+            --nav-btn-hover: rgba(0, 0, 0, 0.08);
+            --card-hover-border: #d0d0d8;
+            --input-bg: #f0f0f5;
+            --input-border: #d0d0d8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ---- Scrollbar ---- */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 3px;
+        }
+
+        /* ---- Header ---- */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--header-bg);
+            backdrop-filter: saturate(180%) blur(24px);
+            -webkit-backdrop-filter: saturate(180%) blur(24px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+        }
+
+        .header-inner {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            gap: 20px;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #a78bfa, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .logo-text h1 {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+        }
+
+        .logo-text span {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* ---- Search ---- */
+        .search-wrap {
+            flex: 1;
+            max-width: 480px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 40px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 0 44px 0 18px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 16px;
+            pointer-events: none;
+        }
+
+        /* ---- Stats ---- */
+        .header-stats {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-shrink: 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+        .stat-num {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ---- Filter Tags ---- */
+        .filter-bar {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: var(--transition);
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .filter-tag:hover {
+            background: var(--card-hover);
+            border-color: var(--border);
+        }
+        .filter-tag.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        .filter-tag .count {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        /* ---- Gallery Grid ---- */
+        .gallery-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 8px 32px 48px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        /* ---- Card ---- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-card);
+            position: relative;
+            break-inside: avoid;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-card-hover);
+            border-color: var(--card-hover-border);
+        }
+
+        .card-image-wrap {
+            position: relative;
+            overflow: hidden;
+            background: var(--img-bg);
+            aspect-ratio: 16 / 10;
+        }
+
+        .card-image-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block;
+        }
+
+        .card:hover .card-image-wrap img {
+            transform: scale(1.05);
+        }
+
+        /* Image placeholder gradient */
+        .img-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: var(--img-placeholder-color);
+        }
+
+        .card-image-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+        .card:hover .card-image-overlay {
+            opacity: 1;
+        }
+
+        .card-model-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            color: #ddd;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: var(--transition);
+        }
+        .card:hover .card-model-badge {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .card-images-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            color: #ddd;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: var(--transition);
+        }
+        .card:hover .card-images-badge {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+            letter-spacing: -0.2px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-prompt {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .card-lang-badge {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 3px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 600;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .card-tag {
+            padding: 3px 10px;
+            border-radius: 10px;
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .card-model-info {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card-copy {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 14px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .card-copy:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        /* ---- Empty State ---- */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            grid-column: 1 / -1;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+        .empty-state h3 {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .empty-state p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        /* ---- Modal ---- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: var(--modal-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            position: relative;
+            width: 92vw;
+            max-width: 1000px;
+            max-height: 92vh;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 10;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .modal-close:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+        }
+
+        .modal-image {
+            flex-shrink: 0;
+            max-height: 52vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--img-bg);
+            overflow: hidden;
+        }
+        .modal-image img {
+            max-width: 100%;
+            max-height: 52vh;
+            object-fit: contain;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .modal-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .modal-meta-item {
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 14px;
+            background: var(--tag-bg);
+            color: var(--tag-text);
+        }
+
+        .modal-section {
+            margin-bottom: 20px;
+        }
+        .modal-section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-prompt-text {
+            background: var(--prompt-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--prompt-text);
+            white-space: pre-wrap;
+            word-break: break-word;
+            position: relative;
+        }
+        .prompt-lang-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            vertical-align: middle;
+        }
+        .prompt-section {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .prompt-section:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .prompt-section .prompt-text {
+            display: inline;
+        }
+        .prompt-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .prompt-section .btn-copy-section {
+            padding: 2px 8px;
+            font-size: 10px;
+            gap: 3px;
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 11px;
+            gap: 4px;
+        }
+        .modal-prompt-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .btn:hover {
+            background: var(--card-hover);
+        }
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #8b74f5;
+        }
+
+        .modal-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            z-index: 10;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        }
+        .modal-nav:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 24px rgba(167, 139, 250, 0.5);
+        }
+        .modal-nav.prev {
+            left: 20px;
+        }
+        .modal-nav.next {
+            right: 20px;
+        }
+        .modal-image-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 8px 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+        }
+        .modal-image-prev,
+        .modal-image-next {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .modal-image-prev:hover,
+        .modal-image-next:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(167, 139, 250, 0.5);
+        }
+        .modal-image-counter {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* ---- Toast ---- */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--toast-bg);
+            color: var(--toast-color);
+            padding: 10px 24px;
+            border-radius: 24px;
+            font-size: 13px;
+            z-index: 999;
+            border: 1px solid var(--toast-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ---- Theme Toggle ---- */
+        .theme-toggle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover {
+            background: var(--card-hover);
+            border-color: var(--accent);
+        }
+
+        /* ---- Add Button ---- */
+        .btn-add {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px dashed var(--accent);
+            background: transparent;
+            color: var(--accent);
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .btn-add:hover {
+            background: var(--accent);
+            color: #fff;
+            border-style: solid;
+        }
+
+        /* ---- Edit button in modal ---- */
+        .modal-edit-btn {
+            position: absolute;
+            top: 16px;
+            right: 68px;
+            z-index: 10;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .modal-edit-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(167, 139, 250, 0.5);
+        }
+
+        /* ---- Form Modal ---- */
+        .form-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 250;
+            background: var(--modal-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .form-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .form-modal {
+            width: 92vw;
+            max-width: 600px;
+            max-height: 90vh;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow-y: auto;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .form-overlay.active .form-modal {
+            transform: scale(1) translateY(0);
+        }
+        .form-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px 0;
+        }
+        .form-modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .form-modal-body {
+            padding: 16px 24px 4px;
+        }
+        .form-modal-footer {
+            padding: 12px 24px 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: var(--transition);
+            resize: vertical;
+        }
+        .form-input:focus,
+        .form-textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .form-textarea {
+            min-height: 120px;
+            line-height: 1.6;
+        }
+        .form-input::placeholder,
+        .form-textarea::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+        .form-hint {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+        .btn-image-select {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px dashed var(--accent);
+            background: transparent;
+            color: var(--accent);
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+            margin-bottom: 8px;
+        }
+        .btn-image-select:hover {
+            background: var(--accent);
+            color: #fff;
+            border-style: solid;
+        }
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .image-preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: var(--img-bg);
+        }
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .image-preview-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            opacity: 0;
+            transition: var(--transition);
+        }
+        .image-preview-item:hover .image-preview-remove {
+            opacity: 1;
+        }
+        .btn-danger {
+            background: #dc2626 !important;
+            border-color: #dc2626 !important;
+            color: #fff !important;
+        }
+        .btn-danger:hover {
+            background: #b91c1c !important;
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 768px) {
+            .header-inner {
+                flex-wrap: wrap;
+                height: auto;
+                padding: 12px 0;
+                gap: 10px;
+            }
+            .search-wrap {
+                order: 3;
+                max-width: 100%;
+                width: 100%;
+            }
+            .header {
+                padding: 0 16px;
+            }
+            .filter-bar {
+                padding: 12px 16px;
+                gap: 6px;
+            }
+            .gallery-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+            .gallery-container {
+                padding: 8px 16px 40px;
+            }
+            .modal {
+                width: 96vw;
+                max-height: 96vh;
+            }
+            .modal-image {
+                max-height: 36vh;
+            }
+            .modal-image img {
+                max-height: 36vh;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo-area">
+                <div class="logo-icon">✦</div>
+                <div class="logo-text">
+                    <h1>AI 绘画作品集</h1>
+                    <span>Prompt Gallery</span>
+                </div>
+            </div>
+            <div class="search-wrap">
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索提示词、标签或模型...">
+                <span class="search-icon">⌕</span>
+            </div>
+            <div class="header-stats" id="headerStats">
+                <div class="stat-item"><div class="stat-num" id="statCount">0</div><div class="stat-label">作品</div></div>
+                <div class="stat-item"><div class="stat-num" id="statTags">0</div><div class="stat-label">标签</div></div>
+            </div>
+            <button class="theme-toggle" id="btnSelectFile" title="选择数据文件" style="font-size: 14px;">📁</button>
+            <button class="btn-add" id="btnAdd" title="新增作品">+</button>
+            <button class="theme-toggle" id="btnExport" title="导出数据">💾</button>
+            <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+        </div>
+    </header>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar" id="filterBar"></div>
+
+    <!-- Gallery -->
+    <div class="gallery-container">
+        <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <button class="modal-close" id="modalClose">✕</button>
+            <button class="modal-edit-btn" id="modalEdit" title="编辑作品">✎</button>
+            <button class="modal-nav prev" id="modalPrev">‹</button>
+            <button class="modal-nav next" id="modalNext">›</button>
+            <div class="modal-image" id="modalImage"></div>
+            <div class="modal-body">
+                <div class="modal-header">
+                    <div class="modal-title" id="modalTitle"></div>
+                </div>
+                <div class="modal-meta" id="modalMeta"></div>
+                <div class="modal-section" style="margin-top: 16px;">
+                    <div class="modal-section-label">
+                        <span>提示词 / Prompt</span>
+                        <button class="btn btn-primary btn-sm" id="modalCopy">
+                            <span>📋</span> 复制
+                        </button>
+                    </div>
+                    <div class="modal-prompt-text" id="modalPrompt"></div>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-label">标签</div>
+                    <div class="modal-tags" id="modalTags"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Form Modal (新增/编辑) -->
+    <div class="form-overlay" id="formOverlay">
+        <div class="form-modal">
+            <div class="form-modal-header">
+                <div class="form-modal-title" id="formTitle">新增作品</div>
+                <button class="modal-close" id="formClose">✕</button>
+            </div>
+            <div class="form-modal-body">
+                <div class="form-group">
+                    <label class="form-label">作品标题</label>
+                    <input type="text" class="form-input" id="fTitle" placeholder="输入作品标题">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">选择图片（支持多选）</label>
+                    <input type="file" id="fImage" multiple accept="image/*" style="display: none;">
+                    <button type="button" class="btn btn-image-select" id="fImageBtn">
+                        <span>📁</span> 选择图片文件
+                    </button>
+                    <div class="form-hint">支持多张图片，文件名将自动添加时间戳</div>
+                    <div id="imagePreview" class="image-preview"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">标签（逗号分隔）</label>
+                    <input type="text" class="form-input" id="fTags" placeholder="标签1, 标签2, 标签3">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">AI 模型</label>
+                    <input type="text" class="form-input" id="fModel" placeholder="Midjourney v6 / Stable Diffusion XL / ...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">日期</label>
+                    <input type="text" class="form-input" id="fDate" placeholder="2026-06-25">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">英文提示词 / English Prompt</label>
+                    <textarea class="form-textarea" id="fPromptEn" placeholder="输入英文提示词..." rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">中文提示词 / Chinese Prompt</label>
+                    <textarea class="form-textarea" id="fPromptZh" placeholder="输入中文提示词..." rows="4"></textarea>
+                </div>
+            </div>
+            <div class="form-modal-footer">
+                <button class="btn btn-danger" id="fDelete" style="display:none;">删除</button>
+                <button class="btn" id="formCloseBtn">取消</button>
+                <button class="btn btn-primary" id="fSave">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!--
+        数据文件（双击 HTML 即可使用，无需服务器）
+        - data.js：作品元数据（图片路径、标题、标签、提示词等）
+        添加新作品时编辑 data.js 即可
+    -->
+    <script src="data.js"></script>
+
+    <script>
+        (function () {
+            // ==== File System Access API ====
+            const DB_NAME = 'ai_gallery_fs';
+            const STORE_NAME = 'file_handles';
+            const HANDLE_KEY = 'data_file';
+            let db = null;
+            let dataFileHandle = null;
+            let dataLoadedFromFile = false;
+
+            // 打开或创建数据库
+            function openDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(DB_NAME, 1);
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => {
+                        db = request.result;
+                        resolve(db);
+                    };
+                    request.onupgradeneeded = (event) => {
+                        const database = event.target.result;
+                        if (!database.objectStoreNames.contains(STORE_NAME)) {
+                            database.createObjectStore(STORE_NAME);
+                        }
+                    };
+                });
+            }
+
+            // 存储文件句柄
+            async function storeFileHandle(handle) {
+                if (!db) await openDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(STORE_NAME, 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.put(handle, HANDLE_KEY);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            // 获取文件句柄
+            async function getFileHandle() {
+                if (!db) await openDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(STORE_NAME, 'readonly');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.get(HANDLE_KEY);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            // 从文件加载数据
+            async function loadDataFromFile() {
+                try {
+                    const handle = await getFileHandle();
+                    if (!handle) return false;
+                    // 检查权限
+                    const opts = { mode: 'read' };
+                    if ((await handle.queryPermission(opts)) !== 'granted') {
+                        if ((await handle.requestPermission(opts)) !== 'granted') {
+                            return false;
+                        }
+                    }
+                    const file = await handle.getFile();
+                    const text = await file.text();
+                    // 解析 data.js 文件内容
+                    // 假设文件内容是 "const GALLERY_DATA = [...];"
+                    // 我们需要提取数组部分
+                    const match = text.match(/const\s+GALLERY_DATA\s*=\s*(\[.*\]);/s);
+                    if (match) {
+                        const data = JSON.parse(match[1]);
+                        // 更新 allItems
+                        allItems = data.map(item => ({
+                            id: item.id,
+                            images: item.images || [],
+                            title: item.title,
+                            tags: item.tags || [],
+                            model: item.model || '',
+                            date: item.date || '',
+                            promptEn: item.promptEn || '',
+                            promptZh: item.promptZh || '',
+                            _original: true
+                        }));
+                        dataLoadedFromFile = true;
+                        dataFileHandle = handle;
+                        return true;
+                    } else {
+                        showToast('无法解析数据文件，请确保文件格式正确');
+                    }
+                } catch (e) {
+                    console.error('从文件加载数据失败:', e);
+                    showToast('读取文件失败: ' + e.message);
+                }
+                return false;
+            }
+
+            // 保存数据到文件
+            async function saveDataToFile() {
+                if (!dataFileHandle) return false;
+                try {
+                    const jsContent = '// ==========================================\n' +
+                        '// AI 绘画作品元数据（图片路径、标题、标签等）\n' +
+                        '// 直接编辑此文件添加新作品\n' +
+                        '// 每个作品可包含多张图片\n' +
+                        '// promptEn: 英文提示词\n' +
+                        '// promptZh: 中文提示词\n' +
+                        '// 两者可以同时存在，也可以只存在一个\n' +
+                        '// ==========================================\n' +
+                        'const GALLERY_DATA = ' + JSON.stringify(allItems.map(item => ({
+                            id: item.id,
+                            images: item.images || [],
+                            promptEn: item.promptEn || '',
+                            promptZh: item.promptZh || '',
+                            title: item.title,
+                            tags: item.tags || [],
+                            model: item.model || '',
+                            date: item.date || ''
+                        })), null, 2) + ';\n';
+                    
+                    const writable = await dataFileHandle.createWritable();
+                    await writable.write(jsContent);
+                    await writable.close();
+                    return true;
+                } catch (e) {
+                    console.error('保存数据到文件失败:', e);
+                    showToast('保存文件失败: ' + e.message);
+                    return false;
+                }
+            }
+
+            // 选择数据文件
+            async function selectDataFile() {
+                try {
+                    const [handle] = await window.showOpenFilePicker({
+                        types: [{
+                            description: 'JavaScript 文件',
+                            accept: { 'application/javascript': ['.js'] }
+                        }],
+                        multiple: false
+                    });
+                    await storeFileHandle(handle);
+                    dataFileHandle = handle;
+                    // 加载数据
+                    const loaded = await loadDataFromFile();
+                    if (loaded) {
+                        renderAll();
+                        showToast('数据文件已关联，后续编辑将自动保存');
+                    }
+                    updateFileStatusUI();
+                } catch (e) {
+                    if (e.name !== 'AbortError') {
+                        console.error('选择文件失败:', e);
+                    }
+                }
+            }
+
+            // 更新文件状态 UI
+            function updateFileStatusUI() {
+                const btn = document.getElementById('btnSelectFile');
+                if (!btn) return;
+                if (!isFSSupported) {
+                    btn.style.display = 'none';
+                    return;
+                }
+                if (dataFileHandle) {
+                    btn.title = '已关联数据文件 (点击重新选择)';
+                    btn.style.borderColor = 'var(--accent)';
+                } else {
+                    btn.title = '选择数据文件';
+                    btn.style.borderColor = '';
+                }
+            }
+
+            // 检查支持情况
+            const isFSSupported = 'showOpenFilePicker' in window;
+
+            // 初始化数据库
+            if (isFSSupported) {
+                openDB().then(() => {
+                    // 尝试从文件加载数据
+                    loadDataFromFile().then(loaded => {
+                        if (loaded) {
+                            // 数据已加载，需要重新渲染
+                            renderAll();
+                        }
+                        // 无论是否加载成功，都更新 UI
+                        updateFileStatusUI();
+                    }).catch(e => {
+                        console.error('加载文件数据失败:', e);
+                        updateFileStatusUI();
+                    });
+                }).catch(e => {
+                    console.error('打开数据库失败:', e);
+                    updateFileStatusUI();
+                });
+            }
+            else {
+                updateFileStatusUI();
+            }
+
+            // ==== 合并元数据与提示词文本 ====
+            let allItems = (GALLERY_DATA || []).map(function(item) {
+                return {
+                    id: item.id,
+                    images: item.images || [],
+                    title: item.title,
+                    tags: item.tags || [],
+                    model: item.model || '',
+                    date: item.date || '',
+                    promptEn: item.promptEn || '',
+                    promptZh: item.promptZh || '',
+                    _original: true   // 标记为原始数据
+                };
+            });
+
+            // ==== localStorage 持久化 ====
+            var STORAGE_KEY = 'ai_gallery_userdata';
+            function loadUserData() {
+                // 如果已经从文件加载数据，跳过 localStorage
+                if (dataLoadedFromFile) return;
+                try {
+                    var raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        var userData = JSON.parse(raw);
+                        // 合并用户编辑/新增的数据
+                        if (userData.edits) {
+                            for (var key in userData.edits) {
+                                var edit = userData.edits[key];
+                                var found = false;
+                                for (var i = 0; i < allItems.length; i++) {
+                                    if (allItems[i].id == key) {
+                                        allItems[i].title = edit.title || allItems[i].title;
+                                        allItems[i].images = edit.images || allItems[i].images;
+                                        allItems[i].tags = edit.tags || allItems[i].tags;
+                                        allItems[i].model = edit.model || allItems[i].model;
+                                        allItems[i].date = edit.date || allItems[i].date;
+                                        allItems[i].promptEn = edit.promptEn !== undefined ? edit.promptEn : allItems[i].promptEn;
+                                        allItems[i].promptZh = edit.promptZh !== undefined ? edit.promptZh : allItems[i].promptZh;
+                                        allItems[i]._dirty = true;
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                if (!found && edit.id) {
+                                    allItems.push({
+                                        id: edit.id, images: edit.images || [], title: edit.title || '',
+                                        tags: edit.tags || [], model: edit.model || '', date: edit.date || '',
+                                        promptEn: edit.promptEn || '', promptZh: edit.promptZh || '', _dirty: true
+                                    });
+                                }
+                            }
+                        }
+                        if (userData.deleted) {
+                            allItems = allItems.filter(function(item) { return userData.deleted.indexOf(item.id) === -1; });
+                        }
+                    }
+                } catch(e) { /* ignore */ }
+            }
+            function saveUserData() {
+                var edits = {};
+                var deleted = [];
+                allItems.forEach(function(item) {
+                    if (item._dirty) {
+                        edits[item.id] = {
+                            id: item.id, title: item.title, images: item.images,
+                            tags: item.tags, model: item.model, date: item.date,
+                            promptEn: item.promptEn, promptZh: item.promptZh
+                        };
+                    }
+                });
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ edits: edits, deleted: deleted }));
+                // 如果有关联的文件，自动保存到文件
+                if (dataFileHandle) {
+                    saveDataToFile().catch(e => console.error('自动保存到文件失败:', e));
+                }
+            }
+            function markDeleted(id) {
+                try {
+                    var raw = localStorage.getItem(STORAGE_KEY);
+                    var userData = raw ? JSON.parse(raw) : {};
+                    userData.deleted = userData.deleted || [];
+                    if (userData.deleted.indexOf(id) === -1) userData.deleted.push(id);
+                    if (userData.edits) delete userData.edits[id];
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+                } catch(e) {}
+            }
+
+            loadUserData();
+
+            // ==== 主题切换 ====
+            var THEME_KEY = 'ai_gallery_theme';
+            var themeToggle = document.getElementById('themeToggle');
+            function applyTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                themeToggle.textContent = theme === 'light' ? '☀' : '🌙';
+                try { localStorage.setItem(THEME_KEY, theme); } catch(e) {}
+            }
+            var savedTheme = (function() { try { return localStorage.getItem(THEME_KEY); } catch(e) { return null; } })();
+            applyTheme(savedTheme || 'dark');
+            themeToggle.addEventListener('click', function() {
+                var current = document.documentElement.getAttribute('data-theme');
+                applyTheme(current === 'light' ? 'dark' : 'light');
+            });
+
+            var currentFilter = 'all';
+            var currentLangFilter = 'all';
+            var currentModalIndex = -1;
+
+            // ==== DOM ====
+            var galleryGrid = document.getElementById('galleryGrid');
+            var filterBar = document.getElementById('filterBar');
+            var searchInput = document.getElementById('searchInput');
+            var statCount = document.getElementById('statCount');
+            var statTags = document.getElementById('statTags');
+            var modalOverlay = document.getElementById('modalOverlay');
+            var modalImage = document.getElementById('modalImage');
+            var modalTitle = document.getElementById('modalTitle');
+            var modalMeta = document.getElementById('modalMeta');
+            var modalPrompt = document.getElementById('modalPrompt');
+            var modalTags = document.getElementById('modalTags');
+            var modalCopy = document.getElementById('modalCopy');
+            var modalClose = document.getElementById('modalClose');
+            var modalPrev = document.getElementById('modalPrev');
+            var modalNext = document.getElementById('modalNext');
+            var modalEdit = document.getElementById('modalEdit');
+            var toast = document.getElementById('toast');
+
+            // ==== Form DOM ====
+            var formOverlay = document.getElementById('formOverlay');
+            var formTitle = document.getElementById('formTitle');
+            var fTitle = document.getElementById('fTitle');
+            var fImage = document.getElementById('fImage');
+            var fImageBtn = document.getElementById('fImageBtn');
+            var imagePreview = document.getElementById('imagePreview');
+            var fTags = document.getElementById('fTags');
+            var fModel = document.getElementById('fModel');
+            var fDate = document.getElementById('fDate');
+            var fPromptEn = document.getElementById('fPromptEn');
+            var fPromptZh = document.getElementById('fPromptZh');
+            var fSave = document.getElementById('fSave');
+            var fDelete = document.getElementById('fDelete');
+            var formClose = document.getElementById('formClose');
+            var formCloseBtn = document.getElementById('formCloseBtn');
+
+            var editingId = null; // null=新增, number=编辑中的 id
+            var selectedFiles = []; // 存储选择的文件
+            var imagesDirHandle = null; // 缓存 images 目录句柄
+
+            // ==== Toast ====
+            var toastTimer;
+            function showToast(msg) {
+                toast.textContent = msg;
+                toast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 2200);
+            }
+
+            // ==== Extract all tags ====
+            function getAllTags() {
+                var tagSet = Object.create(null);
+                allItems.forEach(function(item) {
+                    (item.tags || []).forEach(function(t) { tagSet[t] = true; });
+                });
+                return Object.keys(tagSet).sort();
+            }
+
+            // ==== Filter items ====
+            function getFilteredItems() {
+                var items = allItems;
+                var search = searchInput.value.trim().toLowerCase();
+                if (currentFilter !== 'all') {
+                    items = items.filter(function(i) { return (i.tags || []).indexOf(currentFilter) !== -1; });
+                }
+                if (currentLangFilter === 'en') {
+                    items = items.filter(function(i) { return i.promptEn && i.promptEn.trim(); });
+                } else if (currentLangFilter === 'zh') {
+                    items = items.filter(function(i) { return i.promptZh && i.promptZh.trim(); });
+                }
+                if (search) {
+                    items = items.filter(function(i) {
+                        return [i.title, i.promptEn, i.promptZh, i.model, i.date].concat(i.tags || []).join(' ').toLowerCase().indexOf(search) !== -1;
+                    });
+                }
+                return items;
+            }
+
+            // ==== Render ====
+            function renderAll() {
+                renderFilterBar();
+                renderGallery();
+                updateStats();
+            }
+
+            function renderFilterBar() {
+                var tags = getAllTags();
+                var html = '<span class="filter-tag active" data-tag="all">全部<span class="count"> ' + allItems.length + '</span></span>';
+                tags.forEach(function(tag) {
+                    var count = allItems.filter(function(i) { return (i.tags || []).indexOf(tag) !== -1; }).length;
+                    html += '<span class="filter-tag" data-tag="' + tag + '">' + tag + '<span class="count"> ' + count + '</span></span>';
+                });
+                // 添加语言筛选
+                var enCount = allItems.filter(function(i) { return i.promptEn && i.promptEn.trim(); }).length;
+                var zhCount = allItems.filter(function(i) { return i.promptZh && i.promptZh.trim(); }).length;
+                html += '<span class="filter-tag" data-lang="en">英文提示词<span class="count"> ' + enCount + '</span></span>';
+                html += '<span class="filter-tag" data-lang="zh">中文提示词<span class="count"> ' + zhCount + '</span></span>';
+                filterBar.innerHTML = html;
+                filterBar.querySelectorAll('.filter-tag').forEach(function(el) {
+                    el.addEventListener('click', function() {
+                        filterBar.querySelectorAll('.filter-tag').forEach(function(e) { e.classList.remove('active'); });
+                        el.classList.add('active');
+                        if (el.dataset.tag) {
+                            currentFilter = el.dataset.tag;
+                            currentLangFilter = 'all';
+                        } else if (el.dataset.lang) {
+                            currentFilter = 'all';
+                            currentLangFilter = el.dataset.lang;
+                        }
+                        renderGallery();
+                        updateStats();
+                    });
+                });
+            }
+
+            function renderGallery() {
+                var items = getFilteredItems();
+                if (items.length === 0) {
+                    galleryGrid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><h3>没有找到匹配的作品</h3><p>试试调整筛选条件或搜索关键词</p></div>';
+                    return;
+                }
+                galleryGrid.innerHTML = items.map(function(item) {
+                    var tagsHtml = (item.tags || []).map(function(t) { return '<span class="card-tag">' + t + '</span>'; }).join('');
+                    var hasEn = item.promptEn && item.promptEn.trim();
+                    var hasZh = item.promptZh && item.promptZh.trim();
+                    var promptPreview = '';
+                    if (hasEn && hasZh) {
+                        promptPreview = item.promptEn.substring(0, 100);
+                    } else if (hasEn) {
+                        promptPreview = item.promptEn.substring(0, 120);
+                    } else if (hasZh) {
+                        promptPreview = item.promptZh.substring(0, 120);
+                    }
+                    var promptText = hasEn ? item.promptEn : (item.promptZh || '');
+                    var allIdx = allItems.indexOf(item);
+                    var formattedId = String(item.id).padStart(6, '0');
+                    var imagesCount = (item.images || []).length;
+                    var imagesBadge = imagesCount > 1 ? '<div class="card-images-badge">📷 ' + imagesCount + '</div>' : '';
+                    return '<div class="card" data-index="' + allIdx + '" onclick="window._openModal(' + allIdx + ')">' +
+                        '<div class="card-image-wrap">' +
+                            '<img src="' + (item.images[0] || '') + '" alt="' + item.title + '" onerror="this.parentElement.innerHTML=\'<div class=img-placeholder>🖼</div>\'" loading="lazy">' +
+                            '<div class="card-image-overlay"></div>' +
+                            '<div class="card-model-badge">' + (item.model || '') + '</div>' +
+                            imagesBadge +
+                        '</div>' +
+                        '<div class="card-body">' +
+                            '<div class="card-title">' + item.title + '</div>' +
+                            '<div class="card-prompt">' + promptPreview + (promptText.length > 120 ? '...' : '') + '</div>' +
+                            '<div class="card-tags">' + tagsHtml + '</div>' +
+                        '</div>' +
+                        '<div class="card-footer">' +
+                            '<span class="card-model-info">' + (item.model || '') + ' #' + formattedId + '</span>' +
+                            '<button class="card-copy" onclick="event.stopPropagation(); window._copyItemPrompt(' + allIdx + ')">📋 复制</button>' +
+                        '</div>' +
+                    '</div>';
+                }).join('');
+            }
+
+            function updateStats() {
+                statCount.textContent = allItems.length;
+                statTags.textContent = getAllTags().length;
+            }
+
+            // ==== Detail Modal ====
+            var currentImageIndex = 0;
+            function openModal(index) {
+                if (index < 0 || index >= allItems.length) return;
+                currentModalIndex = index;
+                currentImageIndex = 0;
+                var item = allItems[index];
+                var images = item.images || [];
+                modalImage.innerHTML = '<img src="' + (images[0] || '') + '" alt="' + item.title + '" onerror="this.src=\'\'; this.alt=\'图片加载失败\';">';
+                modalTitle.textContent = item.title;
+                var modalFormattedId = String(item.id).padStart(6, '0');
+                modalMeta.innerHTML = '<span class="modal-meta-item">🤖 ' + (item.model || '未知模型') + ' #' + modalFormattedId + '</span>';
+                var hasEn = item.promptEn && item.promptEn.trim();
+                var hasZh = item.promptZh && item.promptZh.trim();
+                var promptHtml = '';
+                if (hasEn && hasZh) {
+                    promptHtml = '<div class="prompt-section"><div class="prompt-section-header"><span class="prompt-lang-badge">英文</span><button class="btn btn-primary btn-copy-section" onclick="window._copyLangPrompt(\'en\')">📋 复制</button></div><div class="prompt-text">' + item.promptEn + '</div></div>' +
+                                 '<div class="prompt-section"><div class="prompt-section-header"><span class="prompt-lang-badge">中文</span><button class="btn btn-primary btn-copy-section" onclick="window._copyLangPrompt(\'zh\')">📋 复制</button></div><div class="prompt-text">' + item.promptZh + '</div></div>';
+                    modalCopy.style.display = 'none';
+                } else if (hasEn) {
+                    promptHtml = '<span class="prompt-lang-badge">英文</span>' + item.promptEn;
+                    modalCopy.style.display = '';
+                } else if (hasZh) {
+                    promptHtml = '<span class="prompt-lang-badge">中文</span>' + item.promptZh;
+                    modalCopy.style.display = '';
+                } else {
+                    promptHtml = '(无提示词)';
+                    modalCopy.style.display = '';
+                }
+                modalPrompt.innerHTML = promptHtml;
+                modalTags.innerHTML = (item.tags || []).map(function(t) {
+                    return '<span class="card-tag" style="font-size:12px;padding:5px 12px;">' + t + '</span>';
+                }).join('');
+                modalPrev.style.display = (index === 0) ? 'none' : 'flex';
+                modalNext.style.display = (index === allItems.length - 1) ? 'none' : 'flex';
+                // 处理多图导航
+                var imageNav = document.getElementById('modalImageNav');
+                if (!imageNav) {
+                    imageNav = document.createElement('div');
+                    imageNav.id = 'modalImageNav';
+                    imageNav.className = 'modal-image-nav';
+                    modalImage.parentElement.insertBefore(imageNav, modalImage.nextSibling);
+                }
+                if (images.length > 1) {
+                    imageNav.innerHTML = '<button class="modal-image-prev" onclick="event.stopPropagation(); window._prevImage()">‹</button>' +
+                        '<span class="modal-image-counter">1 / ' + images.length + '</span>' +
+                        '<button class="modal-image-next" onclick="event.stopPropagation(); window._nextImage()">›</button>';
+                    imageNav.style.display = 'flex';
+                } else {
+                    imageNav.style.display = 'none';
+                }
+                modalOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            function prevImage() {
+                var item = allItems[currentModalIndex];
+                var images = item.images || [];
+                if (images.length <= 1) return;
+                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                updateModalImage();
+            }
+            function nextImage() {
+                var item = allItems[currentModalIndex];
+                var images = item.images || [];
+                if (images.length <= 1) return;
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                updateModalImage();
+            }
+            function updateModalImage() {
+                var item = allItems[currentModalIndex];
+                var images = item.images || [];
+                var img = modalImage.querySelector('img');
+                if (img) {
+                    img.src = images[currentImageIndex] || '';
+                }
+                var counter = document.querySelector('.modal-image-counter');
+                if (counter) {
+                    counter.textContent = (currentImageIndex + 1) + ' / ' + images.length;
+                }
+            }
+
+            function closeModal() {
+                modalOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+                currentModalIndex = -1;
+            }
+
+            function getPromptText(item) {
+                var hasEn = item.promptEn && item.promptEn.trim();
+                var hasZh = item.promptZh && item.promptZh.trim();
+                if (hasEn && hasZh) {
+                    return item.promptEn + '\n\n' + item.promptZh;
+                } else if (hasEn) {
+                    return item.promptEn;
+                } else if (hasZh) {
+                    return item.promptZh;
+                }
+                return '';
+            }
+
+            function copyCurrentPrompt() {
+                if (currentModalIndex < 0) return;
+                var item = allItems[currentModalIndex];
+                var text = getPromptText(item);
+                navigator.clipboard.writeText(text).then(function() {
+                    showToast('提示词已复制到剪贴板');
+                }).catch(function() {
+                    showToast('复制失败，请手动选择文本');
+                });
+            }
+
+            function copyLangPrompt(lang) {
+                if (currentModalIndex < 0) return;
+                var item = allItems[currentModalIndex];
+                var text = lang === 'en' ? (item.promptEn || '') : (item.promptZh || '');
+                if (!text) return;
+                var label = lang === 'en' ? '英文' : '中文';
+                navigator.clipboard.writeText(text).then(function() {
+                    showToast(label + '提示词已复制到剪贴板');
+                }).catch(function() {
+                    showToast('复制失败，请手动选择文本');
+                });
+            }
+
+            function copyItemPrompt(index) {
+                if (index < 0 || index >= allItems.length) return;
+                var item = allItems[index];
+                var text = getPromptText(item);
+                navigator.clipboard.writeText(text).then(function() {
+                    showToast('提示词已复制到剪贴板');
+                }).catch(function() {
+                    showToast('复制失败，请手动选择文本');
+                });
+            }
+
+            // ==== Form Modal (新增/编辑) ====
+            function openForm(editIndex) {
+                editingId = null;
+                fDelete.style.display = 'none';
+                selectedFiles = [];
+                imagePreview.innerHTML = '';
+                fImage.value = '';
+                
+                if (editIndex !== undefined && editIndex >= 0) {
+                    // 编辑模式
+                    var item = allItems[editIndex];
+                    editingId = item.id;
+                    formTitle.textContent = '编辑作品';
+                    fTitle.value = item.title || '';
+                    fTags.value = (item.tags || []).join(', ');
+                    fModel.value = item.model || '';
+                    fDate.value = item.date || '';
+                    fPromptEn.value = item.promptEn || '';
+                    fPromptZh.value = item.promptZh || '';
+                    fDelete.style.display = 'inline-flex';
+                    
+                    // 如果已有图片，显示预览
+                    if (item.images && item.images.length > 0) {
+                        item.images.forEach(function(imgPath) {
+                            var previewItem = document.createElement('div');
+                            previewItem.className = 'image-preview-item';
+                            previewItem.innerHTML = '<img src="' + imgPath + '" alt="预览"><button class="image-preview-remove" type="button">×</button>';
+                            imagePreview.appendChild(previewItem);
+                            
+                            // 添加删除按钮事件
+                            previewItem.querySelector('.image-preview-remove').addEventListener('click', function() {
+                                previewItem.remove();
+                            });
+                        });
+                    }
+                } else {
+                    // 新增模式
+                    formTitle.textContent = '新增作品';
+                    fTitle.value = '';
+                    fTags.value = '';
+                    fModel.value = '';
+                    fDate.value = new Date().toISOString().split('T')[0];
+                    fPromptEn.value = '';
+                    fPromptZh.value = '';
+                }
+                formOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                setTimeout(function() { fTitle.focus(); }, 100);
+            }
+
+            function closeForm() {
+                formOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+                editingId = null;
+                selectedFiles = [];
+                imagePreview.innerHTML = '';
+                fImage.value = '';
+            }
+
+            // 文件选择相关函数
+            function generateTimestampFilename(originalFilename) {
+                var timestamp = Date.now().toString(16);
+                var random = Math.random().toString(16).substring(2, 8);
+                var extension = originalFilename.split('.').pop() || 'png';
+                // 统一转换为小写，避免大小写问题
+                return timestamp + random + '.' + extension.toLowerCase();
+            }
+
+            async function saveImagesToDir(fileNames) {
+                if (!('showDirectoryPicker' in window)) return false;
+                try {
+                    if (!imagesDirHandle) {
+                        imagesDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                    }
+                    for (var i = 0; i < fileNames.length; i++) {
+                        var item = fileNames[i];
+                        var fileHandle = await imagesDirHandle.getFileHandle(item.name, { create: true });
+                        var writable = await fileHandle.createWritable();
+                        await writable.write(item.file);
+                        await writable.close();
+                    }
+                    showToast('图片已保存到 images/ 目录');
+                    return true;
+                } catch (e) {
+                    if (e.name !== 'AbortError') {
+                        console.error('保存图片失败:', e);
+                    }
+                    imagesDirHandle = null;
+                    return false;
+                }
+            }
+
+            function handleFileSelect(files) {
+                if (!files || files.length === 0) return;
+                
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    if (!file.type.startsWith('image/')) continue;
+                    
+                    selectedFiles.push(file);
+                    
+                    // 创建预览
+                    var previewItem = document.createElement('div');
+                    previewItem.className = 'image-preview-item';
+                    
+                    var img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.alt = file.name;
+                    
+                    var removeBtn = document.createElement('button');
+                    removeBtn.className = 'image-preview-remove';
+                    removeBtn.type = 'button';
+                    removeBtn.textContent = '×';
+                    removeBtn.addEventListener('click', (function(idx, item) {
+                        return function() {
+                            selectedFiles.splice(idx, 1);
+                            item.remove();
+                        };
+                    })(selectedFiles.length - 1, previewItem));
+                    
+                    previewItem.appendChild(img);
+                    previewItem.appendChild(removeBtn);
+                    imagePreview.appendChild(previewItem);
+                }
+            }
+
+            // 文件选择事件监听
+            fImageBtn.addEventListener('click', function() {
+                fImage.click();
+            });
+
+            fImage.addEventListener('change', function(e) {
+                handleFileSelect(e.target.files);
+                fImage.value = ''; // 重置以允许再次选择相同文件
+            });
+
+            async function saveForm() {
+                var title = fTitle.value.trim();
+                if (!title) { showToast('请输入作品标题'); fTitle.focus(); return; }
+
+                var tagsRaw = fTags.value.trim();
+                var tags = tagsRaw ? tagsRaw.split(/[,，]/).map(function(t) { return t.trim(); }).filter(Boolean) : [];
+
+                var data = {
+                    title: title,
+                    images: [],
+                    tags: tags,
+                    model: fModel.value.trim(),
+                    date: fDate.value.trim(),
+                    promptEn: fPromptEn.value.trim(),
+                    promptZh: fPromptZh.value.trim()
+                };
+
+                // 处理文件上传
+                if (selectedFiles.length > 0) {
+                    var imagePaths = [];
+                    var fileNames = [];
+                    
+                    for (var i = 0; i < selectedFiles.length; i++) {
+                        var file = selectedFiles[i];
+                        var newFilename = generateTimestampFilename(file.name);
+                        imagePaths.push('images/' + newFilename);
+                        fileNames.push({ name: newFilename, file: file });
+                    }
+                    
+                    data.images = imagePaths;
+                    
+                    // 尝试自动保存图片到 images 目录
+                    var saved = await saveImagesToDir(fileNames);
+                    if (!saved) {
+                        // 降级：提示用户手动操作
+                        var fileList = fileNames.map(function(item, idx) {
+                            return (idx + 1) + '. ' + item.name;
+                        }).join('\n');
+                        
+                        var message = '自动保存失败，请手动操作：\n\n' +
+                            '1. 将图片文件重命名为：\n' + fileList + '\n\n' +
+                            '2. 将重命名后的文件放入 images/ 目录\n\n' +
+                            '3. 确保文件名大小写完全匹配（包括扩展名）\n\n' +
+                            '4. 点击"确定"继续保存作品信息';
+                        
+                        if (!confirm(message)) {
+                            return;
+                        }
+                    }
+                } else if (editingId !== null) {
+                    // 编辑模式且没有新文件，保留原有图片
+                    for (var i = 0; i < allItems.length; i++) {
+                        if (allItems[i].id === editingId) {
+                            data.images = allItems[i].images || [];
+                            break;
+                        }
+                    }
+                }
+
+                if (editingId !== null) {
+                    // 编辑
+                    for (var i = 0; i < allItems.length; i++) {
+                        if (allItems[i].id === editingId) {
+                            allItems[i].title = data.title;
+                            allItems[i].images = data.images;
+                            allItems[i].tags = data.tags;
+                            allItems[i].model = data.model;
+                            allItems[i].date = data.date;
+                            allItems[i].promptEn = data.promptEn;
+                            allItems[i].promptZh = data.promptZh;
+                            allItems[i]._dirty = true;
+                            break;
+                        }
+                    }
+                    showToast('作品已更新');
+                } else {
+                    // 新增
+                    var maxId = 0;
+                    allItems.forEach(function(item) { if (item.id > maxId) maxId = item.id; });
+                    var newItem = {
+                        id: maxId + 1,
+                        images: data.images,
+                        title: data.title,
+                        tags: data.tags,
+                        model: data.model,
+                        date: data.date,
+                        promptEn: data.promptEn,
+                        promptZh: data.promptZh,
+                        _dirty: true
+                    };
+                    allItems.push(newItem);
+                    showToast('作品已添加');
+                }
+
+                saveUserData();
+                closeForm();
+                renderAll();
+            }
+
+            function deleteCurrent() {
+                if (editingId === null) return;
+                if (!confirm('确定要删除这件作品吗？此操作不可撤销。')) return;
+
+                allItems = allItems.filter(function(item) { return item.id !== editingId; });
+                markDeleted(editingId);
+                // 如果有关联的文件，自动保存到文件
+                if (dataFileHandle) {
+                    saveDataToFile().catch(e => console.error('删除后保存文件失败:', e));
+                }
+                closeForm();
+                renderAll();
+                showToast('作品已删除');
+            }
+
+            // ==== Modal Events ====
+            modalClose.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) closeModal();
+            });
+            modalPrev.addEventListener('click', function() {
+                if (currentModalIndex > 0) openModal(currentModalIndex - 1);
+            });
+            modalNext.addEventListener('click', function() {
+                if (currentModalIndex < allItems.length - 1) openModal(currentModalIndex + 1);
+            });
+            modalCopy.addEventListener('click', copyCurrentPrompt);
+            modalEdit.addEventListener('click', function() {
+                if (currentModalIndex >= 0) {
+                    var currentIndex = currentModalIndex;
+                    closeModal();
+                    openForm(currentIndex);
+                }
+            });
+            searchInput.addEventListener('input', function() {
+                renderGallery();
+                updateStats();
+            });
+
+            // ==== Form Events ====
+            fSave.addEventListener('click', saveForm);
+            formClose.addEventListener('click', closeForm);
+            formCloseBtn.addEventListener('click', closeForm);
+            formOverlay.addEventListener('click', function(e) {
+                if (e.target === formOverlay) closeForm();
+            });
+            fDelete.addEventListener('click', deleteCurrent);
+
+            // 新增按钮
+            document.getElementById('btnAdd').addEventListener('click', function() {
+                openForm();
+            });
+
+            // 导出数据按钮
+            document.getElementById('btnExport').addEventListener('click', function() {
+                var jsContent = '// ==========================================\n' +
+                    '// AI 绘画作品元数据（图片路径、标题、标签等）\n' +
+                    '// 直接编辑此文件添加新作品\n' +
+                    '// 每个作品可包含多张图片\n' +
+                    '// promptEn: 英文提示词\n' +
+                    '// promptZh: 中文提示词\n' +
+                    '// 两者可以同时存在，也可以只存在一个\n' +
+                    '// ==========================================\n' +
+                    'const GALLERY_DATA = ' + JSON.stringify(allItems.map(function(item) {
+                        return {
+                            id: item.id,
+                            images: item.images || [],
+                            promptEn: item.promptEn || '',
+                            promptZh: item.promptZh || '',
+                            title: item.title,
+                            tags: item.tags || [],
+                            model: item.model || '',
+                            date: item.date || ''
+                        };
+                    }), null, 2) + ';\n';
+                
+                var blob = new Blob([jsContent], { type: 'application/javascript' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'data.js';
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('data.js 已导出，请替换项目中的 data.js');
+            });
+
+            // 选择数据文件按钮
+            document.getElementById('btnSelectFile').addEventListener('click', selectDataFile);
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // 表单弹窗快捷键
+                if (formOverlay.classList.contains('active')) {
+                    if (e.key === 'Escape') closeForm();
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') saveForm();
+                    return;
+                }
+                // 详情弹窗快捷键
+                if (!modalOverlay.classList.contains('active')) return;
+                if (e.key === 'Escape') closeModal();
+                if (e.key === 'ArrowLeft' && currentModalIndex > 0) openModal(currentModalIndex - 1);
+                if (e.key === 'ArrowRight' && currentModalIndex < allItems.length - 1) openModal(currentModalIndex + 1);
+                if ((e.ctrlKey || e.metaKey) && e.key === 'c' && currentModalIndex >= 0) {
+                    copyCurrentPrompt();
+                }
+            });
+
+            // ==== Init ====
+            renderAll();
+
+            // Expose to window for onclick in HTML
+            window._openModal = openModal;
+            window._copyItemPrompt = copyItemPrompt;
+            window._copyLangPrompt = copyLangPrompt;
+            window._prevImage = prevImage;
+            window._nextImage = nextImage;
+
+        })();
+    </script>
+</body>
+</html>
