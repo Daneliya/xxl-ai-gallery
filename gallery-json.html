@@ -1722,10 +1722,26 @@
         - data.json：授权本地文件夹后自动创建，包含作品元数据
         未授权文件夹时使用 data_default.json 的默认数据
     -->
-    <script src="data_default.js"></script>
+    <!-- 移除 data_default.js，改为异步加载 data_default.json -->
 
     <script>
         (function () {
+            // ==== 加载默认数据 ====
+            var loadedDefaultData = [];
+            
+            async function loadDefaultData() {
+                try {
+                    const response = await fetch('data_default.json');
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    loadedDefaultData = await response.json();
+                    return loadedDefaultData;
+                } catch (e) {
+                    console.error('加载 data_default.json 失败:', e);
+                    loadedDefaultData = [];
+                    return [];
+                }
+            }
+
             // ==== File System Access API ====
             const DB_NAME = 'ai_gallery_fs';
             const STORE_NAME = 'file_handles';
@@ -1804,10 +1820,10 @@
             // ==== 数据管理：默认数据与用户数据分离 ====
             var STORAGE_KEY = 'ai_gallery_userdata';
             
-            // 使用 data_default.js 的默认数据
-            var sourceData = (typeof DEFAULT_GALLERY_DATA !== 'undefined' && DEFAULT_GALLERY_DATA && DEFAULT_GALLERY_DATA.length > 0) ? DEFAULT_GALLERY_DATA : [];
+            // 使用 data_default.json 的默认数据
+            var sourceData = loadedDefaultData;
             
-            // 默认数据（只读，来自 data_default.js）
+            // 默认数据（只读，来自 data_default.json）
             var defaultData = sourceData.map(function(item) {
                 return {
                     id: item.id,
@@ -2036,8 +2052,6 @@
             function isUserItem(id) {
                 return userData.items.some(function(item) { return item.id === id; });
             }
-
-            loadUserData();
 
             // ==== 主题切换 ====
             var THEME_KEY = 'ai_gallery_theme';
@@ -3200,7 +3214,7 @@
                     console.error('加载 data.json 失败:', e);
                     showToast('加载 data.json 失败: ' + e.message + '。请通过 HTTP 服务器启动项目。');
                     // 降级：使用默认数据
-                    allItems = (DEFAULT_GALLERY_DATA || []).map(function(item) {
+                    allItems = (loadedDefaultData || []).map(function(item) {
                         return Object.assign({}, item, { _original: true });
                     });
                     renderAll();
@@ -3210,6 +3224,28 @@
             // 初始化（首次授权文件夹，然后加载数据）
             async function initApp() {
                 try {
+                    // 先加载默认数据
+                    await loadDefaultData();
+                    
+                    // 更新 sourceData 和 defaultData
+                    sourceData = loadedDefaultData;
+                    defaultData = sourceData.map(function(item) {
+                        return {
+                            id: item.id,
+                            images: item.images || [],
+                            title: item.title,
+                            tags: item.tags || [],
+                            model: item.model || '',
+                            date: item.date || '',
+                            promptEn: item.promptEn || '',
+                            promptZh: item.promptZh || ''
+                        };
+                    });
+                    
+                    // 加载用户数据并渲染
+                    loadUserData();
+                    renderAll();
+                    
                     // 检查是否已有授权的目录句柄
                     const dirHandle = await checkDirectoryAuthorization();
                     if (dirHandle) {
@@ -3335,7 +3371,7 @@
                     console.error('从授权目录加载数据失败:', e);
                     showToast('加载数据失败: ' + e.message);
                     // 降级：使用默认数据
-                    allItems = (DEFAULT_GALLERY_DATA || []).map(function(item) {
+                    allItems = (loadedDefaultData || []).map(function(item) {
                         return Object.assign({}, item, { _original: true });
                     });
                     renderAll();
@@ -3480,11 +3516,8 @@
                 });
             }
 
-            // 启动初始化
+            // 启动初始化（内部会加载数据并渲染）
             initApp();
-
-            // ==== Init ====
-            renderAll();
 
             // Expose to window for onclick in HTML
             window._openModal = openModal;

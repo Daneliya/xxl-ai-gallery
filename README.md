@@ -30,10 +30,12 @@
 
 ```bash
 # Windows
-双击 start.bat
+双击 scripts/start.bat
 
 # 然后浏览器打开 http://localhost:8080/gallery-json.html
 ```
+
+> **注意**：如果脚本中出现中文乱码，请确保使用 Windows PowerShell 或 CMD 运行，或者在脚本开头已添加 `chcp 65001 >nul` 设置 UTF-8 编码。
 
 ### 方式二：手动启动
 
@@ -60,9 +62,20 @@ xxl-ai-gallery/
 ├── data_default.json       # 默认示例数据（只读，用于初始化）
 ├── data_default.js         # 默认示例数据（JS 格式，单 HTML 版本使用）
 ├── data.json               # 作品数据（JSON 格式，授权后自动创建）
-├── start.bat               # Windows 一键启动脚本
-├── TECH_RESEARCH.md        # 技术调研文档
-└── images/                 # 存放 AI 生成的图片
+├── main.js                 # Electron 主进程文件，包含窗口管理、菜单创建和文件操作功能
+├── package.json            # 项目配置文件，包含依赖、构建脚本和打包配置
+├── images/                 # 存放 AI 生成的图片
+├── docs/                   # 文档目录
+│   ├── BUILD.md            # 打包指南
+│   ├── INSTALL.md          # 安装指南
+│   ├── QUICKSTART.md       # 快速开始指南
+│   ├── ICONS.md            # 图标制作指南
+│   ├── TECH_RESEARCH.md    # 技术调研文档
+│   └── images/             # 文档图片
+└── scripts/                # 脚本目录
+    ├── build.bat           # Windows 打包脚本
+    ├── test.bat            # Windows 测试脚本
+    └── start.bat           # Windows 启动脚本
 ```
 
 ## 📖 使用说明
@@ -188,9 +201,67 @@ xxl-ai-gallery/
 
 > **提示**：Chrome/Edge 用户可享受自动保存功能，其他浏览器请使用手动导出。
 
+## 🖥️ 桌面应用打包
+
+本项目支持打包成独立的桌面应用程序（Windows、macOS、Linux），无需浏览器即可运行。
+
+### 快速打包（Windows）
+
+1. 双击运行 `scripts/build.bat`
+2. 等待打包完成
+3. 在 `dist` 目录中找到安装程序 `AI Gallery Setup.exe`
+
+### 故障排除
+
+如果打包后没有生成 `dist` 目录，请尝试以下步骤：
+
+1. **检查依赖**：确保 `node_modules` 目录存在且包含 `electron` 和 `electron-builder`
+2. **清除缓存**：运行 `npm cache clean --force` 后重新安装依赖
+5. **检查网络**：确保网络连接正常，能访问 npm 镜像源
+6. **检查目录**：确保脚本在项目根目录运行（脚本会自动切换目录）
+
+### 测试应用（Windows）
+
+在打包之前，建议先测试应用是否能正常运行：
+
+1. 双击运行 `scripts/test.bat`
+2. 等待依赖安装完成
+3. 应用将自动启动
+4. 测试所有功能是否正常
+5. 关闭应用窗口
+
+### 手动打包（所有平台）
+
+```bash
+# 安装依赖
+npm install
+
+# 打包当前平台版本
+npm run build
+
+# 或者指定平台打包
+npm run build:win      # Windows
+npm run build:win -- -c.win.signAndEditExecutable=false
+npm run build:mac      # macOS
+npm run build:linux    # Linux
+```
+
+### 打包后特性
+
+- **双击即可运行**：不需要启动 HTTP 服务器
+- **完整的文件系统访问**：可以直接读写本地文件
+- **原生应用体验**：原生菜单、快捷键、系统托盘
+- **可分发**：打包后的应用可以分享给其他人使用
+
+### 详细说明
+
+更多打包选项和故障排除，请参考 [打包指南](./docs/BUILD.md)。
+
 ## 📝 相关文档
 
-- [技术调研文档](./TECH_RESEARCH.md) - 数据持久化方案对比与技术细节
+- [技术调研文档](./docs/TECH_RESEARCH.md) - 数据持久化方案对比、技术细节与打包方案分析
+- [安装指南](./docs/INSTALL.md) - 详细安装和运行说明
+- [快速开始](./docs/QUICKSTART.md) - 5 分钟快速上手指南
 
 ## 许可证
 

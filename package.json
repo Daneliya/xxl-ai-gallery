@@ -1,0 +1,59 @@
+{
+  "name": "xxl-ai-gallery",
+  "version": "1.0.0",
+  "description": "AI 绘画作品集 - 一个用于展示 AI 绘画作品及其提示词的静态画廊页面",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "keywords": ["ai", "gallery", "prompt", "drawing", "electron"],
+  "author": "XXL",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "build": {
+    "appId": "com.xxl.ai-gallery",
+    "productName": "AI Gallery",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "gallery-json.html",
+      "gallery-standalone.html",
+      "data_default.json",
+      "data_default.js",
+      "images/**/*",
+      "docs/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "images/icon.ico",
+      "signAndEditExecutable": false,
+      "sign": null,
+      "verifyUpdateCodeSignature": false
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "images/icon.icns"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "images/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "AI Gallery"
+    }
+  }
+}
