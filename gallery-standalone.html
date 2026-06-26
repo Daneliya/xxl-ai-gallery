@@ -1,0 +1,3286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 绘画作品集</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --card-bg: #13131a;
+            --card-hover: #1a1a24;
+            --text: #e4e4e8;
+            --text-secondary: #90909c;
+            --border: #1e1e2a;
+            --accent: #a78bfa;
+            --accent-glow: rgba(167, 139, 250, 0.15);
+            --tag-bg: #1e1e30;
+            --tag-text: #c4b5fd;
+            --modal-bg: rgba(0, 0, 0, 0.92);
+            --scrollbar-thumb: #2a2a3a;
+            --radius: 14px;
+            --radius-sm: 8px;
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(0, 0, 0, 0.2);
+            --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.4), 0 12px 40px rgba(0, 0, 0, 0.3);
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --img-bg: #0d0d15;
+            --img-placeholder-color: #2a2a3a;
+            --header-bg: rgba(10, 10, 15, 0.78);
+            --prompt-bg: #0a0a14;
+            --prompt-text: #d4d4dc;
+            --toast-bg: #27273a;
+            --toast-border: #3a3a50;
+            --toast-color: #e4e4e8;
+            --nav-btn-bg: rgba(0, 0, 0, 0.6);
+            --nav-btn-border: rgba(255, 255, 255, 0.1);
+            --nav-btn-hover: rgba(255, 255, 255, 0.2);
+            --card-hover-border: #2a2a40;
+            --input-bg: #0d0d18;
+            --input-border: #2a2a3a;
+        }
+
+        /* 白天主题 */
+        [data-theme="light"] {
+            --bg: #f5f5f8;
+            --card-bg: #ffffff;
+            --card-hover: #f0f0f5;
+            --text: #1a1a24;
+            --text-secondary: #6b6b78;
+            --border: #e0e0e8;
+            --accent: #7c3aed;
+            --accent-glow: rgba(124, 58, 237, 0.12);
+            --tag-bg: #ede9fe;
+            --tag-text: #6d28d9;
+            --modal-bg: rgba(0, 0, 0, 0.5);
+            --scrollbar-thumb: #c8c8d4;
+            --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
+            --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.1), 0 12px 32px rgba(0, 0, 0, 0.06);
+            --img-bg: #e8e8ee;
+            --img-placeholder-color: #c8c8d4;
+            --header-bg: rgba(245, 245, 248, 0.78);
+            --prompt-bg: #f0f0f5;
+            --prompt-text: #333340;
+            --toast-bg: #ffffff;
+            --toast-border: #e0e0e8;
+            --toast-color: #1a1a24;
+            --nav-btn-bg: rgba(255, 255, 255, 0.8);
+            --nav-btn-border: rgba(0, 0, 0, 0.1);
+            --nav-btn-hover: rgba(0, 0, 0, 0.08);
+            --card-hover-border: #d0d0d8;
+            --input-bg: #f0f0f5;
+            --input-border: #d0d0d8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ---- Scrollbar ---- */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 3px;
+        }
+
+        /* ---- Header ---- */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--header-bg);
+            backdrop-filter: saturate(180%) blur(24px);
+            -webkit-backdrop-filter: saturate(180%) blur(24px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+        }
+
+        .header-inner {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            gap: 16px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #a78bfa, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        .logo-text h1 {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            line-height: 1.2;
+        }
+
+        .logo-text span {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* ---- Search ---- */
+        .search-wrap {
+            flex: 1;
+            max-width: 480px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 40px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 0 44px 0 18px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-secondary);
+        }
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 16px;
+            pointer-events: none;
+        }
+
+        /* ---- Stats ---- */
+        .header-stats {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-shrink: 0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+        .stat-num {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ---- Filter Tags ---- */
+        .filter-bar {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            font-size: 13px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: var(--transition);
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .filter-tag:hover {
+            background: var(--card-hover);
+            border-color: var(--border);
+        }
+        .filter-tag.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        .filter-tag .count {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        /* ---- Gallery Grid ---- */
+        .gallery-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 8px 32px 48px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        /* ---- Card ---- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-card);
+            position: relative;
+            break-inside: avoid;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-card-hover);
+            border-color: var(--card-hover-border);
+        }
+
+        .card-image-wrap {
+            position: relative;
+            overflow: hidden;
+            background: var(--img-bg);
+            aspect-ratio: 16 / 10;
+        }
+
+        .card-image-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            display: block;
+        }
+
+        .card:hover .card-image-wrap img {
+            transform: scale(1.05);
+        }
+
+        /* Image placeholder gradient */
+        .img-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: var(--img-placeholder-color);
+        }
+
+        .card-image-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.6) 0%, transparent 50%);
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+        .card:hover .card-image-overlay {
+            opacity: 1;
+        }
+
+        .card-model-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            color: #ddd;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: var(--transition);
+        }
+        .card:hover .card-model-badge {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .card-images-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            color: #ddd;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: var(--transition);
+        }
+        .card:hover .card-images-badge {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card-body {
+            padding: 16px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text);
+            letter-spacing: -0.2px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-prompt {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .card-lang-badge {
+            display: inline-block;
+            padding: 1px 6px;
+            border-radius: 3px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 600;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .card-tag {
+            padding: 3px 10px;
+            border-radius: 10px;
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .card-model-info {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card-copy,
+        .card-delete {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            padding: 0;
+        }
+
+        .card-copy svg,
+        .card-delete svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        .card-copy:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+
+        .card-delete:hover {
+            background: #fee2e2;
+            border-color: #f87171;
+            color: #ef4444;
+        }
+
+        [data-theme="dark"] .card-delete:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #f87171;
+            color: #f87171;
+        }
+
+        /* ---- Empty State ---- */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            grid-column: 1 / -1;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+        .empty-state h3 {
+            font-size: 18px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        .empty-state p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        /* ---- Modal ---- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: var(--modal-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            position: relative;
+            width: 92vw;
+            max-width: 1000px;
+            max-height: 92vh;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 10;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .modal-close:hover {
+            background: #ef4444;
+            border-color: #ef4444;
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+        }
+
+        .modal-image {
+            flex-shrink: 0;
+            max-height: 52vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--img-bg);
+            overflow: hidden;
+        }
+        .modal-image img {
+            max-width: 100%;
+            max-height: 52vh;
+            object-fit: contain;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .modal-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .modal-meta-item {
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 14px;
+            background: var(--tag-bg);
+            color: var(--tag-text);
+        }
+
+        .modal-section {
+            margin-bottom: 20px;
+        }
+        .modal-section-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .modal-prompt-text {
+            background: var(--prompt-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--prompt-text);
+            white-space: pre-wrap;
+            word-break: break-word;
+            position: relative;
+        }
+        .prompt-lang-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: var(--accent);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            vertical-align: middle;
+        }
+        .prompt-section {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        .prompt-section:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .prompt-section .prompt-text {
+            display: inline;
+        }
+        .prompt-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .prompt-section .btn-copy-section {
+            padding: 2px 8px;
+            font-size: 10px;
+            gap: 3px;
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 11px;
+            gap: 4px;
+        }
+        .modal-prompt-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+        }
+        .btn:hover {
+            background: var(--card-hover);
+        }
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #8b74f5;
+        }
+
+        .modal-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            z-index: 10;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        }
+        .modal-nav:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 24px rgba(167, 139, 250, 0.5);
+        }
+        .modal-nav.prev {
+            left: 20px;
+        }
+        .modal-nav.next {
+            right: 20px;
+        }
+        .modal-image-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 8px 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+        }
+        .modal-image-prev,
+        .modal-image-next {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .modal-image-prev:hover,
+        .modal-image-next:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(167, 139, 250, 0.5);
+        }
+        .modal-image-counter {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* ---- Delete Confirm Modal ---- */
+        .confirm-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .confirm-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .confirm-dialog {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            width: 400px;
+            max-width: 90vw;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.92) translateY(8px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .confirm-overlay.active .confirm-dialog {
+            transform: scale(1) translateY(0);
+        }
+        .confirm-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .confirm-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #fef2f2;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        [data-theme="dark"] .confirm-icon {
+            background: rgba(239, 68, 68, 0.15);
+        }
+        .confirm-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            flex: 1;
+        }
+        .confirm-close {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+        .confirm-close:hover {
+            background: var(--tag-bg);
+            color: var(--text);
+        }
+        .confirm-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .confirm-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .confirm-btn-cancel {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .confirm-btn-cancel:hover {
+            background: var(--tag-bg);
+        }
+        .confirm-btn-delete {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            background: #3b82f6;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .confirm-btn-delete:hover {
+            background: #2563eb;
+        }
+
+        /* ---- Toast ---- */
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--toast-bg);
+            color: var(--toast-color);
+            padding: 10px 24px;
+            border-radius: 24px;
+            font-size: 13px;
+            z-index: 999;
+            border: 1px solid var(--toast-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ---- Theme Toggle ---- */
+        .theme-toggle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+        .theme-toggle:hover {
+            background: var(--card-hover);
+            border-color: var(--accent);
+        }
+
+        /* ---- Folder Info ---- */
+        .folder-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+            max-width: 180px;
+            overflow: visible;
+            position: relative;
+        }
+        .folder-info:hover {
+            background: var(--card-hover);
+            border-color: var(--accent);
+        }
+        .folder-icon {
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .folder-name {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+        .folder-info.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        .folder-info.active .folder-icon {
+            color: #fff;
+        }
+
+        /* ---- Folder Dropdown ---- */
+        .folder-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: 220px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: var(--shadow-card);
+            z-index: 200;
+        }
+        .folder-dropdown.show {
+            display: block;
+        }
+        .folder-dropdown-title {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .folder-dropdown-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px;
+            word-break: break-all;
+        }
+        .folder-dropdown-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        .folder-dropdown-status .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #22c55e;
+            flex-shrink: 0;
+        }
+        .folder-dropdown-btn {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--accent);
+            background: var(--accent);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: var(--transition);
+            margin-bottom: 6px;
+        }
+        .folder-dropdown-btn:hover {
+            opacity: 0.9;
+        }
+        .folder-dropdown-btn-secondary {
+            background: transparent;
+            color: var(--text-secondary);
+            border-color: var(--border);
+        }
+        .folder-dropdown-btn-secondary:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        /* ---- Add Button ---- */
+        .btn-add {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px dashed var(--accent);
+            background: transparent;
+            color: var(--accent);
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .btn-add:hover {
+            background: var(--accent);
+            color: #fff;
+            border-style: solid;
+        }
+
+        /* ---- Edit button in modal ---- */
+        .modal-edit-btn {
+            position: absolute;
+            top: 16px;
+            right: 68px;
+            z-index: 10;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .modal-edit-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(167, 139, 250, 0.5);
+        }
+
+        /* ---- Form Modal ---- */
+        .form-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 250;
+            background: var(--modal-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .form-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .form-modal {
+            width: 92vw;
+            max-width: 600px;
+            max-height: 90vh;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow-y: auto;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+            transform: scale(0.95) translateY(10px);
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .form-overlay.active .form-modal {
+            transform: scale(1) translateY(0);
+        }
+        .form-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px 0;
+        }
+        .form-modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .form-modal-body {
+            padding: 16px 24px 4px;
+        }
+        .form-modal-footer {
+            padding: 12px 24px 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: var(--transition);
+            resize: vertical;
+        }
+        .form-input:focus,
+        .form-textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .form-textarea {
+            min-height: 120px;
+            line-height: 1.6;
+        }
+        .form-input::placeholder,
+        .form-textarea::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+        .form-hint {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+        .btn-image-select {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px dashed var(--accent);
+            background: transparent;
+            color: var(--accent);
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: inherit;
+            margin-bottom: 8px;
+        }
+        .btn-image-select:hover {
+            background: var(--accent);
+            color: #fff;
+            border-style: solid;
+        }
+        .image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .image-preview-item {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: var(--img-bg);
+        }
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .image-preview-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            opacity: 0;
+            transition: var(--transition);
+        }
+        .image-preview-item:hover .image-preview-remove {
+            opacity: 1;
+        }
+        .btn-danger {
+            background: #dc2626 !important;
+            border-color: #dc2626 !important;
+            color: #fff !important;
+        }
+        .btn-danger:hover {
+            background: #b91c1c !important;
+        }
+
+        /* ---- Welcome Overlay ---- */
+        .welcome-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(124, 58, 237, 0.15));
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .welcome-overlay.active {
+            opacity: 1;
+        }
+        .welcome-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .welcome-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            padding: 40px;
+            max-width: 480px;
+            width: 90vw;
+            text-align: center;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+            transform: scale(0.95) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .welcome-overlay.active .welcome-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .welcome-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, #a78bfa, #7c3aed);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: #fff;
+            box-shadow: 0 12px 40px rgba(167, 139, 250, 0.4);
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .welcome-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 8px;
+        }
+
+        .welcome-hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            opacity: 0.7;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .welcome-error {
+            font-size: 12px;
+            color: #ef4444;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            border-radius: 8px;
+            display: none;
+        }
+        .welcome-error.show {
+            display: block;
+        }
+
+        .welcome-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .welcome-status .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #9ca3af;
+        }
+        .welcome-status.authorized .status-dot {
+            background: #10b981;
+        }
+
+        .btn-authorize {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #a78bfa, #7c3aed);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 24px rgba(167, 139, 250, 0.4);
+        }
+        .btn-authorize:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(167, 139, 250, 0.5);
+        }
+        .btn-authorize:active {
+            transform: translateY(0);
+        }
+
+        .welcome-skip {
+            display: block;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+        .welcome-skip:hover {
+            color: var(--accent);
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 768px) {
+            .header-inner {
+                flex-wrap: wrap;
+                height: auto;
+                padding: 12px 0;
+                gap: 10px;
+            }
+            .search-wrap {
+                order: 3;
+                max-width: 100%;
+                width: 100%;
+            }
+            .header {
+                padding: 0 16px;
+            }
+            .filter-bar {
+                padding: 12px 16px;
+                gap: 6px;
+            }
+            .gallery-grid {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+            .gallery-container {
+                padding: 8px 16px 40px;
+            }
+            .modal {
+                width: 96vw;
+                max-height: 96vh;
+            }
+            .modal-image {
+                max-height: 36vh;
+            }
+            .modal-image img {
+                max-height: 36vh;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Welcome Overlay (首次打开授权) -->
+    <div class="welcome-overlay" id="welcomeOverlay">
+        <div class="welcome-card">
+            <div class="welcome-icon">✦</div>
+            <h2 class="welcome-title">欢迎使用 AI 绘画作品集</h2>
+            <p class="welcome-desc">
+                提示词和图片将存储在你授权的本地文件夹中。浏览器会保存文件夹授权句柄，用于下次进入时继续访问。
+            </p>
+            <p class="welcome-hint">
+                授权后，所有数据将直接保存到你选择的文件夹中，无需额外配置。
+            </p>
+            <div class="welcome-error" id="welcomeError"></div>
+            <div class="welcome-status" id="welcomeStatus">
+                <span class="status-dot"></span>
+                <span>尚未授权本地文件夹</span>
+            </div>
+            <button class="btn-authorize" id="btnAuthorize">
+                <span>📂</span> 授权本地文件夹
+            </button>
+            <button class="welcome-skip" id="btnSkip">暂时跳过，使用本地存储</button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-inner">
+            <div class="logo-area">
+                <div class="logo-icon">✦</div>
+                <div class="logo-text">
+                    <h1>AI 绘画作品集</h1>
+                    <span>Prompt Gallery</span>
+                </div>
+            </div>
+            <div class="search-wrap">
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索提示词、标签或模型...">
+                <span class="search-icon">⌕</span>
+            </div>
+            <div class="header-stats" id="headerStats">
+                <div class="stat-item"><div class="stat-num" id="statCount">0</div><div class="stat-label">作品</div></div>
+                <div class="stat-item"><div class="stat-num" id="statTags">0</div><div class="stat-label">标签</div></div>
+            </div>
+            <div class="header-actions">
+                <div class="folder-info" id="folderInfo">
+                    <span class="folder-icon">📂</span>
+                    <span class="folder-name" id="folderName">未关联文件夹</span>
+                    <!-- 文件夹详情下拉 -->
+                    <div class="folder-dropdown" id="folderDropdown">
+                        <div class="folder-dropdown-title">当前关联文件夹</div>
+                        <div class="folder-dropdown-name" id="folderDropdownName">--</div>
+                        <div class="folder-dropdown-status">
+                            <span class="status-dot"></span>
+                            <span>已授权 · 可读写</span>
+                        </div>
+                        <button class="folder-dropdown-btn" id="folderDropdownBtn">
+                            <span>📁</span> 更换文件夹
+                        </button>
+                        <button class="folder-dropdown-btn folder-dropdown-btn-secondary" id="folderDropdownRevoke">
+                            <span>✕</span> 取消授权
+                        </button>
+                    </div>
+                </div>
+                <button class="btn-add" id="btnAdd" title="新增作品">+</button>
+                <button class="theme-toggle" id="btnExport" title="导出数据">💾</button>
+                <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar" id="filterBar"></div>
+
+    <!-- Gallery -->
+    <div class="gallery-container">
+        <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <button class="modal-close" id="modalClose">✕</button>
+            <button class="modal-edit-btn" id="modalEdit" title="编辑作品">✎</button>
+            <button class="modal-nav prev" id="modalPrev">‹</button>
+            <button class="modal-nav next" id="modalNext">›</button>
+            <div class="modal-image" id="modalImage"></div>
+            <div class="modal-body">
+                <div class="modal-header">
+                    <div class="modal-title" id="modalTitle"></div>
+                </div>
+                <div class="modal-meta" id="modalMeta"></div>
+                <div class="modal-section" style="margin-top: 16px;">
+                    <div class="modal-section-label">
+                        <span>提示词 / Prompt</span>
+                        <button class="btn btn-primary btn-sm" id="modalCopy">
+                            <span>📋</span> 复制
+                        </button>
+                    </div>
+                    <div class="modal-prompt-text" id="modalPrompt"></div>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-label">标签</div>
+                    <div class="modal-tags" id="modalTags"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Dialog -->
+    <div class="confirm-overlay" id="confirmOverlay">
+        <div class="confirm-dialog">
+            <div class="confirm-header">
+                <div class="confirm-icon">⚠</div>
+                <div class="confirm-title">删除提示词</div>
+                <button class="confirm-close" id="confirmClose">×</button>
+            </div>
+            <div class="confirm-message" id="confirmMessage"></div>
+            <div class="confirm-footer">
+                <button class="confirm-btn-cancel" id="confirmCancel">取消</button>
+                <button class="confirm-btn-delete" id="confirmDelete">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Form Modal (新增/编辑) -->
+    <div class="form-overlay" id="formOverlay">
+        <div class="form-modal">
+            <div class="form-modal-header">
+                <div class="form-modal-title" id="formTitle">新增作品</div>
+                <button class="modal-close" id="formClose">✕</button>
+            </div>
+            <div class="form-modal-body">
+                <div class="form-group">
+                    <label class="form-label">作品标题</label>
+                    <input type="text" class="form-input" id="fTitle" placeholder="输入作品标题">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">选择图片（支持多选）</label>
+                    <input type="file" id="fImage" multiple accept="image/*" style="display: none;">
+                    <button type="button" class="btn btn-image-select" id="fImageBtn">
+                        <span>📁</span> 选择图片文件
+                    </button>
+                    <div class="form-hint">支持多张图片，文件名将自动添加时间戳</div>
+                    <div id="imagePreview" class="image-preview"></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">标签（逗号分隔）</label>
+                    <input type="text" class="form-input" id="fTags" placeholder="标签1, 标签2, 标签3">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">AI 模型</label>
+                    <input type="text" class="form-input" id="fModel" placeholder="Midjourney v6 / Stable Diffusion XL / ...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">日期</label>
+                    <input type="text" class="form-input" id="fDate" placeholder="2026-06-25">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">英文提示词 / English Prompt</label>
+                    <textarea class="form-textarea" id="fPromptEn" placeholder="输入英文提示词..." rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">中文提示词 / Chinese Prompt</label>
+                    <textarea class="form-textarea" id="fPromptZh" placeholder="输入中文提示词..." rows="4"></textarea>
+                </div>
+            </div>
+            <div class="form-modal-footer">
+                <button class="btn btn-danger" id="fDelete" style="display:none;">删除</button>
+                <button class="btn" id="formCloseBtn">取消</button>
+                <button class="btn btn-primary" id="fSave">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!--
+        数据文件（双击 HTML 即可使用，无需服务器）
+        - data_default.js：默认示例数据（只读）
+        - data.js：授权本地文件夹后自动创建，包含作品元数据
+        未授权文件夹时使用 data_default.js 的默认数据
+    -->
+    <script src="data_default.js"></script>
+
+    <script>
+        (function () {
+            // ==== File System Access API ====
+            const DB_NAME = 'ai_gallery_fs';
+            const STORE_NAME = 'file_handles';
+            const HANDLE_KEY = 'data_file';
+            let db = null;
+            let dataFileHandle = null;
+            let dataLoadedFromFile = false;
+
+            // 打开或创建数据库
+            function openDB() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(DB_NAME, 1);
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => {
+                        db = request.result;
+                        resolve(db);
+                    };
+                    request.onupgradeneeded = (event) => {
+                        const database = event.target.result;
+                        if (!database.objectStoreNames.contains(STORE_NAME)) {
+                            database.createObjectStore(STORE_NAME);
+                        }
+                    };
+                });
+            }
+
+            // 存储文件句柄
+            async function storeFileHandle(handle) {
+                if (!db) await openDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(STORE_NAME, 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.put(handle, HANDLE_KEY);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            // 获取文件句柄
+            async function getFileHandle() {
+                if (!db) await openDB();
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(STORE_NAME, 'readonly');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.get(HANDLE_KEY);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            // 从文件加载数据
+            async function loadDataFromFile() {
+                try {
+                    const handle = await getFileHandle();
+                    if (!handle) return false;
+                    // 检查权限
+                    const opts = { mode: 'read' };
+                    if ((await handle.queryPermission(opts)) !== 'granted') {
+                        if ((await handle.requestPermission(opts)) !== 'granted') {
+                            return false;
+                        }
+                    }
+                    const file = await handle.getFile();
+                    const text = await file.text();
+                    // 解析 data.js 文件内容
+                    // 假设文件内容是 "const GALLERY_DATA = [...];"
+                    // 我们需要提取数组部分
+                    const match = text.match(/const\s+GALLERY_DATA\s*=\s*(\[.*\]);/s);
+                    if (match) {
+                        const data = JSON.parse(match[1]);
+                        // 更新 allItems
+                        allItems = data.map(item => ({
+                            id: item.id,
+                            images: item.images || [],
+                            title: item.title,
+                            tags: item.tags || [],
+                            model: item.model || '',
+                            date: item.date || '',
+                            promptEn: item.promptEn || '',
+                            promptZh: item.promptZh || '',
+                            _original: true
+                        }));
+                        // 保存文件数据副本，供 mergeData 使用
+                        fileData = allItems.map(item => Object.assign({}, item));
+                        
+                        // 清空 localStorage 中的用户增量数据
+                        userData = { items: [], edits: {}, deleted: [] };
+                        saveUserDataToStorage();
+                        
+                        dataLoadedFromFile = true;
+                        dataFileHandle = handle;
+                        return true;
+                    } else {
+                        showToast('无法解析数据文件，请确保文件格式正确');
+                    }
+                } catch (e) {
+                    console.error('从文件加载数据失败:', e);
+                    showToast('读取文件失败: ' + e.message);
+                }
+                return false;
+            }
+
+            // 保存数据到文件
+            async function saveDataToFile() {
+                if (!dataFileHandle) return false;
+                try {
+                    const jsContent = '// ==========================================\n' +
+                        '// AI 绘画作品元数据（图片路径、标题、标签等）\n' +
+                        '// 直接编辑此文件添加新作品\n' +
+                        '// 每个作品可包含多张图片\n' +
+                        '// promptEn: 英文提示词\n' +
+                        '// promptZh: 中文提示词\n' +
+                        '// 两者可以同时存在，也可以只存在一个\n' +
+                        '// ==========================================\n' +
+                        'const GALLERY_DATA = ' + JSON.stringify(allItems.map(item => ({
+                            id: item.id,
+                            images: item.images || [],
+                            promptEn: item.promptEn || '',
+                            promptZh: item.promptZh || '',
+                            title: item.title,
+                            tags: item.tags || [],
+                            model: item.model || '',
+                            date: item.date || ''
+                        })), null, 2) + ';\n';
+                    
+                    const writable = await dataFileHandle.createWritable();
+                    await writable.write(jsContent);
+                    await writable.close();
+                    return true;
+                } catch (e) {
+                    console.error('保存数据到文件失败:', e);
+                    showToast('保存文件失败: ' + e.message);
+                    return false;
+                }
+            }
+
+            // 选择数据文件
+            async function selectDataFile() {
+                try {
+                    const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                    await storeDirectoryHandle(dirHandle);
+                    // 缓存目录句柄
+                    directoryHandle = dirHandle;
+                    // 更新当前文件夹名称
+                    currentDirName = dirHandle.name;
+                    updateFileStatusUI();
+                    // 加载目录中的数据
+                    await loadFromDirectory(dirHandle);
+                    showToast('已重新选择文件夹: ' + dirHandle.name);
+                } catch (e) {
+                    if (e.name !== 'AbortError') {
+                        console.error('选择文件夹失败:', e);
+                    }
+                }
+            }
+
+            // 更新文件状态 UI
+            function updateFileStatusUI() {
+                const folderInfo = document.getElementById('folderInfo');
+                const folderName = document.getElementById('folderName');
+                const dropdownName = document.getElementById('folderDropdownName');
+                if (!folderInfo || !folderName) return;
+                if (!isFSSupported) {
+                    folderInfo.style.display = 'none';
+                    return;
+                }
+                if (currentDirName) {
+                    folderName.textContent = currentDirName;
+                    if (dropdownName) dropdownName.textContent = currentDirName;
+                    folderInfo.title = '已关联文件夹: ' + currentDirName + ' (点击查看详情)';
+                    folderInfo.classList.add('active');
+                } else {
+                    folderName.textContent = '未关联文件夹';
+                    if (dropdownName) dropdownName.textContent = '--';
+                    folderInfo.title = '点击选择文件夹';
+                    folderInfo.classList.remove('active');
+                }
+            }
+
+            // 检查支持情况
+            const isFSSupported = 'showOpenFilePicker' in window;
+
+            // 初始化数据库
+            if (isFSSupported) {
+                openDB().then(() => {
+                    // 尝试从文件加载数据
+                    loadDataFromFile().then(loaded => {
+                        if (loaded) {
+                            // 数据已加载，需要重新渲染
+                            renderAll();
+                        }
+                        // 无论是否加载成功，都更新 UI
+                        updateFileStatusUI();
+                    }).catch(e => {
+                        console.error('加载文件数据失败:', e);
+                        updateFileStatusUI();
+                    });
+                }).catch(e => {
+                    console.error('打开数据库失败:', e);
+                    updateFileStatusUI();
+                });
+            }
+            else {
+                updateFileStatusUI();
+            }
+
+            // ==== 数据管理：默认数据与用户数据分离 ====
+            var STORAGE_KEY = 'ai_gallery_userdata';
+            
+            // data.js 不存在时直接使用 data_default.js 的默认数据
+            var sourceData = (typeof GALLERY_DATA !== 'undefined' && GALLERY_DATA && GALLERY_DATA.length > 0) ? GALLERY_DATA : (DEFAULT_GALLERY_DATA || []);
+            
+            // 默认数据（只读，来自 data_default.js 或 data.js）
+            var defaultData = sourceData.map(function(item) {
+                return {
+                    id: item.id,
+                    images: item.images || [],
+                    title: item.title,
+                    tags: item.tags || [],
+                    model: item.model || '',
+                    date: item.date || '',
+                    promptEn: item.promptEn || '',
+                    promptZh: item.promptZh || ''
+                };
+            });
+
+            // 用户数据（可读写，存储在 localStorage 中）
+            var userData = {
+                items: [],      // 用户添加的新作品
+                edits: {},      // 用户对默认数据的修改（key: id, value: 修改内容）
+                deleted: []     // 用户删除的默认数据 id
+            };
+
+            // 从文件加载的完整数据（文件模式下作为 mergeData 的基础）
+            var fileData = null;
+
+            // 标记是否需要将默认数据保存到文件（已由 loadFromDirectory 处理）
+            var needSaveDefaultToFile = false;
+
+            // 当前显示的所有数据（合并后）
+            var allItems = [];
+
+            // 加载用户数据
+            function loadUserData() {
+                // 如果已经从文件加载数据，跳过 localStorage
+                if (dataLoadedFromFile) {
+                    // 从文件加载时，allItems 已由 loadFromDirectory 设置
+                    return;
+                }
+                
+                try {
+                    var raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        userData = JSON.parse(raw);
+                        // 确保数据结构完整
+                        userData.items = userData.items || [];
+                        userData.edits = userData.edits || {};
+                        userData.deleted = userData.deleted || [];
+                        
+                        // 清理：移除 userData.items 中与 defaultData 重复的项（旧版本遗留）
+                        var defaultIds = {};
+                        defaultData.forEach(function(item) { defaultIds[item.id] = true; });
+                        userData.items = userData.items.filter(function(item) {
+                            return !defaultIds[item.id];
+                        });
+                    } else {
+                        // 首次使用，未授权文件夹：不复制默认数据到 localStorage
+                        // 直接使用 defaultData 展示，不污染 userData
+                        userData = { items: [], edits: {}, deleted: [] };
+                    }
+                } catch(e) {
+                    console.error('加载用户数据失败:', e);
+                    userData = { items: [], edits: {}, deleted: [] };
+                }
+                
+                // 合并数据
+                mergeData();
+            }
+
+            // 合并默认数据和用户数据
+            function mergeData() {
+                // 文件模式下使用文件数据作为基础，否则使用默认数据
+                var baseData = (dataLoadedFromFile && fileData) ? fileData : defaultData;
+                // 从基础数据开始，应用用户的修改和删除
+                var merged = baseData.map(function(item) {
+                    var id = item.id;
+                    // 检查是否被删除
+                    if (userData.deleted.indexOf(id) !== -1) {
+                        return null;
+                    }
+                    // 检查是否有修改
+                    var edited = userData.edits[id];
+                    if (edited) {
+                        return Object.assign({}, item, edited);
+                    }
+                    return Object.assign({}, item);
+                }).filter(function(item) { return item !== null; });
+
+                // 添加用户新增的作品
+                allItems = merged.concat(userData.items.map(function(item) {
+                    return Object.assign({}, item);
+                }));
+            }
+
+            // 保存用户数据到 localStorage
+            function saveUserDataToStorage() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+                } catch(e) {
+                    console.error('保存用户数据失败:', e);
+                }
+            }
+
+            // 保存用户数据（包括同步到文件）
+            function saveUserData() {
+                saveUserDataToStorage();
+                // 如果有关联的文件，自动保存到文件
+                if (dataFileHandle) {
+                    saveDataToFile().catch(e => console.error('自动保存到文件失败:', e));
+                }
+            }
+
+            // 标记默认数据为已编辑
+            function markEdited(id, changes) {
+                userData.edits[id] = Object.assign({}, userData.edits[id] || {}, changes);
+                mergeData();
+                saveUserData();
+            }
+
+            // 标记默认数据为已删除
+            function markDeleted(id) {
+                if (userData.deleted.indexOf(id) === -1) {
+                    userData.deleted.push(id);
+                }
+                // 同时从 edits 中移除
+                delete userData.edits[id];
+                mergeData();
+                saveUserData();
+            }
+
+            // 添加新作品
+            function addNewItem(item) {
+                userData.items.push(item);
+                mergeData();
+                saveUserData();
+            }
+
+            // 更新用户新增的作品
+            function updateNewItem(id, changes) {
+                for (var i = 0; i < userData.items.length; i++) {
+                    if (userData.items[i].id === id) {
+                        Object.assign(userData.items[i], changes);
+                        break;
+                    }
+                }
+                mergeData();
+                saveUserData();
+            }
+
+            // 删除用户新增的作品
+            function deleteNewItem(id) {
+                userData.items = userData.items.filter(function(item) { return item.id !== id; });
+                mergeData();
+                saveUserData();
+            }
+
+            // 检查是否为默认数据
+            function isDefaultItem(id) {
+                return defaultData.some(function(item) { return item.id === id; });
+            }
+
+            // ==== 删除确认弹窗 ====
+            var confirmOverlay = document.getElementById('confirmOverlay');
+            var confirmMessage = document.getElementById('confirmMessage');
+            var confirmCloseBtn = document.getElementById('confirmClose');
+            var confirmCancelBtn = document.getElementById('confirmCancel');
+            var confirmDeleteBtn = document.getElementById('confirmDelete');
+            var pendingDeleteIndex = null;
+
+            function confirmDelete(index) {
+                if (index < 0 || index >= allItems.length) return;
+                pendingDeleteIndex = index;
+                var item = allItems[index];
+                confirmMessage.textContent = '确认删除「' + item.title + '」吗？该操作会删除本地提示词，无法撤销。';
+                confirmOverlay.classList.add('active');
+            }
+
+            function closeConfirm() {
+                confirmOverlay.classList.remove('active');
+                pendingDeleteIndex = null;
+            }
+
+            confirmCloseBtn.addEventListener('click', closeConfirm);
+            confirmCancelBtn.addEventListener('click', closeConfirm);
+            confirmOverlay.addEventListener('click', function(e) {
+                if (e.target === confirmOverlay) closeConfirm();
+            });
+
+            confirmDeleteBtn.addEventListener('click', function() {
+                if (pendingDeleteIndex === null) return;
+                var item = allItems[pendingDeleteIndex];
+                if (!item) { closeConfirm(); return; }
+
+                if (isDefaultItem(item.id)) {
+                    markDeleted(item.id);
+                } else {
+                    deleteNewItem(item.id);
+                }
+                closeConfirm();
+                renderAll();
+                showToast('已删除「' + item.title + '」');
+            });
+
+            // 检查是否为用户新增的数据
+            function isUserItem(id) {
+                return userData.items.some(function(item) { return item.id === id; });
+            }
+
+            loadUserData();
+
+            // ==== 主题切换 ====
+            var THEME_KEY = 'ai_gallery_theme';
+            var themeToggle = document.getElementById('themeToggle');
+            function applyTheme(theme) {
+                document.documentElement.setAttribute('data-theme', theme);
+                themeToggle.textContent = theme === 'light' ? '☀' : '🌙';
+                try { localStorage.setItem(THEME_KEY, theme); } catch(e) {}
+            }
+            var savedTheme = (function() { try { return localStorage.getItem(THEME_KEY); } catch(e) { return null; } })();
+            applyTheme(savedTheme || 'light');
+            themeToggle.addEventListener('click', function() {
+                var current = document.documentElement.getAttribute('data-theme');
+                applyTheme(current === 'light' ? 'dark' : 'light');
+            });
+
+            var currentFilter = 'all';
+            var currentLangFilter = 'all';
+            var currentModalIndex = -1;
+
+            // ==== DOM ====
+            var galleryGrid = document.getElementById('galleryGrid');
+            var filterBar = document.getElementById('filterBar');
+            var searchInput = document.getElementById('searchInput');
+            var statCount = document.getElementById('statCount');
+            var statTags = document.getElementById('statTags');
+            var modalOverlay = document.getElementById('modalOverlay');
+            var modalImage = document.getElementById('modalImage');
+            var modalTitle = document.getElementById('modalTitle');
+            var modalMeta = document.getElementById('modalMeta');
+            var modalPrompt = document.getElementById('modalPrompt');
+            var modalTags = document.getElementById('modalTags');
+            var modalCopy = document.getElementById('modalCopy');
+            var modalClose = document.getElementById('modalClose');
+            var modalPrev = document.getElementById('modalPrev');
+            var modalNext = document.getElementById('modalNext');
+            var modalEdit = document.getElementById('modalEdit');
+            var toast = document.getElementById('toast');
+
+            // ==== Form DOM ====
+            var formOverlay = document.getElementById('formOverlay');
+            var formTitle = document.getElementById('formTitle');
+            var fTitle = document.getElementById('fTitle');
+            var fImage = document.getElementById('fImage');
+            var fImageBtn = document.getElementById('fImageBtn');
+            var imagePreview = document.getElementById('imagePreview');
+            var fTags = document.getElementById('fTags');
+            var fModel = document.getElementById('fModel');
+            var fDate = document.getElementById('fDate');
+            var fPromptEn = document.getElementById('fPromptEn');
+            var fPromptZh = document.getElementById('fPromptZh');
+            var fSave = document.getElementById('fSave');
+            var fDelete = document.getElementById('fDelete');
+            var formClose = document.getElementById('formClose');
+            var formCloseBtn = document.getElementById('formCloseBtn');
+
+            var editingId = null; // null=新增, number=编辑中的 id
+            var selectedFiles = []; // 存储选择的文件
+            var imagesDirHandle = null; // 缓存 images 目录句柄
+            var currentDirName = null; // 当前授权的文件夹名称
+            var directoryHandle = null; // 当前授权的根目录句柄
+            var imageUrlCache = {}; // 缓存图片对象URL，避免重复读取
+            var imagesUserDirHandle = null; // 缓存 images/user 目录句柄
+
+            // ==== Image Loading from Authorized Directory ====
+            async function getImagesUserDirHandle() {
+                if (imagesUserDirHandle) {
+                    return imagesUserDirHandle;
+                }
+                if (!directoryHandle) {
+                    return null;
+                }
+                try {
+                    const imagesDir = await directoryHandle.getDirectoryHandle('images');
+                    imagesUserDirHandle = await imagesDir.getDirectoryHandle('user');
+                    return imagesUserDirHandle;
+                } catch (e) {
+                    console.warn('无法获取 images/user 目录句柄:', e);
+                    return null;
+                }
+            }
+
+            async function getImageFile(imagePath) {
+                // 从路径中提取文件名 (images/user/xxx.png -> xxx.png)
+                const fileName = imagePath.split('/').pop();
+                const dirHandle = await getImagesUserDirHandle();
+                if (!dirHandle) {
+                    return null;
+                }
+                try {
+                    const fileHandle = await dirHandle.getFileHandle(fileName);
+                    return await fileHandle.getFile();
+                } catch (e) {
+                    console.warn('无法读取图片文件:', fileName, e);
+                    return null;
+                }
+            }
+
+            async function getImageUrl(imagePath) {
+                if (!imagePath) {
+                    return '';
+                }
+                // 检查缓存
+                if (imageUrlCache[imagePath]) {
+                    return imageUrlCache[imagePath];
+                }
+                // 尝试从授权目录加载
+                const file = await getImageFile(imagePath);
+                if (file) {
+                    const url = URL.createObjectURL(file);
+                    imageUrlCache[imagePath] = url;
+                    return url;
+                }
+                // 降级：返回原始路径（可能通过HTTP服务器访问）
+                return imagePath;
+            }
+
+            // 清理所有缓存的对象URL
+            function revokeAllImageUrls() {
+                for (const path in imageUrlCache) {
+                    if (imageUrlCache.hasOwnProperty(path)) {
+                        URL.revokeObjectURL(imageUrlCache[path]);
+                    }
+                }
+                imageUrlCache = {};
+            }
+
+            // 加载卡片中的图片
+            async function loadCardImages() {
+                var imgs = galleryGrid.querySelectorAll('img[data-src]');
+                for (var i = 0; i < imgs.length; i++) {
+                    var img = imgs[i];
+                    var src = img.getAttribute('data-src');
+                    if (src) {
+                        try {
+                            var url = await getImageUrl(src);
+                            img.src = url;
+                        } catch (e) {
+                            console.warn('卡片图片加载失败:', src, e);
+                        }
+                    }
+                }
+            }
+
+            // ==== Toast ====
+            var toastTimer;
+            function showToast(msg) {
+                toast.textContent = msg;
+                toast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 2200);
+            }
+
+            // ==== Extract all tags ====
+            function getAllTags() {
+                var tagSet = Object.create(null);
+                allItems.forEach(function(item) {
+                    (item.tags || []).forEach(function(t) { tagSet[t] = true; });
+                });
+                return Object.keys(tagSet).sort();
+            }
+
+            // ==== Filter items ====
+            function getFilteredItems() {
+                var items = allItems;
+                var search = searchInput.value.trim().toLowerCase();
+                if (currentFilter !== 'all') {
+                    items = items.filter(function(i) { return (i.tags || []).indexOf(currentFilter) !== -1; });
+                }
+                if (currentLangFilter === 'en') {
+                    items = items.filter(function(i) { return i.promptEn && i.promptEn.trim(); });
+                } else if (currentLangFilter === 'zh') {
+                    items = items.filter(function(i) { return i.promptZh && i.promptZh.trim(); });
+                }
+                if (search) {
+                    items = items.filter(function(i) {
+                        return [i.title, i.promptEn, i.promptZh, i.model, i.date].concat(i.tags || []).join(' ').toLowerCase().indexOf(search) !== -1;
+                    });
+                }
+                return items;
+            }
+
+            // ==== Render ====
+            function renderAll() {
+                renderFilterBar();
+                renderGallery();
+                updateStats();
+            }
+
+            function renderFilterBar() {
+                var tags = getAllTags();
+                var html = '<span class="filter-tag active" data-tag="all">全部<span class="count"> ' + allItems.length + '</span></span>';
+                tags.forEach(function(tag) {
+                    var count = allItems.filter(function(i) { return (i.tags || []).indexOf(tag) !== -1; }).length;
+                    html += '<span class="filter-tag" data-tag="' + tag + '">' + tag + '<span class="count"> ' + count + '</span></span>';
+                });
+                // 添加语言筛选
+                var enCount = allItems.filter(function(i) { return i.promptEn && i.promptEn.trim(); }).length;
+                var zhCount = allItems.filter(function(i) { return i.promptZh && i.promptZh.trim(); }).length;
+                html += '<span class="filter-tag" data-lang="en">英文提示词<span class="count"> ' + enCount + '</span></span>';
+                html += '<span class="filter-tag" data-lang="zh">中文提示词<span class="count"> ' + zhCount + '</span></span>';
+                filterBar.innerHTML = html;
+                filterBar.querySelectorAll('.filter-tag').forEach(function(el) {
+                    el.addEventListener('click', function() {
+                        filterBar.querySelectorAll('.filter-tag').forEach(function(e) { e.classList.remove('active'); });
+                        el.classList.add('active');
+                        if (el.dataset.tag) {
+                            currentFilter = el.dataset.tag;
+                            currentLangFilter = 'all';
+                        } else if (el.dataset.lang) {
+                            currentFilter = 'all';
+                            currentLangFilter = el.dataset.lang;
+                        }
+                        renderGallery();
+                        updateStats();
+                    });
+                });
+            }
+
+            function renderGallery() {
+                var items = getFilteredItems();
+                if (items.length === 0) {
+                    galleryGrid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><h3>没有找到匹配的作品</h3><p>试试调整筛选条件或搜索关键词</p></div>';
+                    return;
+                }
+                galleryGrid.innerHTML = items.map(function(item) {
+                    var tagsHtml = (item.tags || []).map(function(t) { return '<span class="card-tag">' + t + '</span>'; }).join('');
+                    var hasEn = item.promptEn && item.promptEn.trim();
+                    var hasZh = item.promptZh && item.promptZh.trim();
+                    var promptPreview = '';
+                    if (hasEn && hasZh) {
+                        promptPreview = item.promptEn.substring(0, 100);
+                    } else if (hasEn) {
+                        promptPreview = item.promptEn.substring(0, 120);
+                    } else if (hasZh) {
+                        promptPreview = item.promptZh.substring(0, 120);
+                    }
+                    var promptText = hasEn ? item.promptEn : (item.promptZh || '');
+                    var allIdx = allItems.indexOf(item);
+                    var formattedId = String(item.id).padStart(6, '0');
+                    var imagesCount = (item.images || []).length;
+                    var imagesBadge = imagesCount > 1 ? '<div class="card-images-badge">📷 ' + imagesCount + '</div>' : '';
+                    var copySvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+                    var deleteSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+                    return '<div class="card" data-index="' + allIdx + '" onclick="window._openModal(' + allIdx + ')">' +
+                        '<div class="card-image-wrap">' +
+                            '<img data-src="' + (item.images[0] || '') + '" alt="' + item.title + '" onerror="this.parentElement.innerHTML=\'<div class=img-placeholder>🖼</div>\'" loading="lazy">' +
+                            '<div class="card-image-overlay"></div>' +
+                            '<div class="card-model-badge">' + (item.model || '') + '</div>' +
+                            imagesBadge +
+                        '</div>' +
+                        '<div class="card-body">' +
+                            '<div class="card-title">' + item.title + '</div>' +
+                            '<div class="card-prompt">' + promptPreview + (promptText.length > 120 ? '...' : '') + '</div>' +
+                            '<div class="card-tags">' + tagsHtml + '</div>' +
+                        '</div>' +
+                        '<div class="card-footer">' +
+                            '<span class="card-model-info">' + (item.model || '') + ' #' + formattedId + '</span>' +
+                            '<div class="card-actions">' +
+                                '<button class="card-copy" onclick="event.stopPropagation(); window._copyItemPrompt(' + allIdx + ')" title="复制提示词">' + copySvg + '</button>' +
+                                '<button class="card-delete" onclick="event.stopPropagation(); window._confirmDelete(' + allIdx + ')" title="删除作品">' + deleteSvg + '</button>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+                }).join('');
+                loadCardImages();
+            }
+
+            function updateStats() {
+                statCount.textContent = allItems.length;
+                statTags.textContent = getAllTags().length;
+            }
+
+            // ==== Detail Modal ====
+            var currentImageIndex = 0;
+            function openModal(index) {
+                if (index < 0 || index >= allItems.length) return;
+                currentModalIndex = index;
+                currentImageIndex = 0;
+                var item = allItems[index];
+                var images = item.images || [];
+                modalImage.innerHTML = '<img src="" alt="' + item.title + '" onerror="this.src=\'\'; this.alt=\'图片加载失败\';">';
+                if (images[0]) {
+                    getImageUrl(images[0]).then(function(url) {
+                        var img = modalImage.querySelector('img');
+                        if (img && allItems[currentModalIndex] === item) {
+                            img.src = url;
+                        }
+                    });
+                }
+                modalTitle.textContent = item.title;
+                var modalFormattedId = String(item.id).padStart(6, '0');
+                modalMeta.innerHTML = '<span class="modal-meta-item">🤖 ' + (item.model || '未知模型') + ' #' + modalFormattedId + '</span>';
+                var hasEn = item.promptEn && item.promptEn.trim();
+                var hasZh = item.promptZh && item.promptZh.trim();
+                var promptHtml = '';
+                if (hasEn && hasZh) {
+                    promptHtml = '<div class="prompt-section"><div class="prompt-section-header"><span class="prompt-lang-badge">英文</span><button class="btn btn-primary btn-copy-section" onclick="window._copyLangPrompt(\'en\')">📋 复制</button></div><div class="prompt-text">' + item.promptEn + '</div></div>' +
+                                 '<div class="prompt-section"><div class="prompt-section-header"><span class="prompt-lang-badge">中文</span><button class="btn btn-primary btn-copy-section" onclick="window._copyLangPrompt(\'zh\')">📋 复制</button></div><div class="prompt-text">' + item.promptZh + '</div></div>';
+                    modalCopy.style.display = 'none';
+                } else if (hasEn) {
+                    promptHtml = '<span class="prompt-lang-badge">英文</span>' + item.promptEn;
+                    modalCopy.style.display = '';
+                } else if (hasZh) {
+                    promptHtml = '<span class="prompt-lang-badge">中文</span>' + item.promptZh;
+                    modalCopy.style.display = '';
+                } else {
+                    promptHtml = '(无提示词)';
+                    modalCopy.style.display = '';
+                }
+                modalPrompt.innerHTML = promptHtml;
+                modalTags.innerHTML = (item.tags || []).map(function(t) {
+                    return '<span class="card-tag" style="font-size:12px;padding:5px 12px;">' + t + '</span>';
+                }).join('');
+                modalPrev.style.display = (index === 0) ? 'none' : 'flex';
+                modalNext.style.display = (index === allItems.length - 1) ? 'none' : 'flex';
+                // 处理多图导航
+                var imageNav = document.getElementById('modalImageNav');
+                if (!imageNav) {
+                    imageNav = document.createElement('div');
+                    imageNav.id = 'modalImageNav';
+                    imageNav.className = 'modal-image-nav';
+                    modalImage.parentElement.insertBefore(imageNav, modalImage.nextSibling);
+                }
+                if (images.length > 1) {
+                    imageNav.innerHTML = '<button class="modal-image-prev" onclick="event.stopPropagation(); window._prevImage()">‹</button>' +
+                        '<span class="modal-image-counter">1 / ' + images.length + '</span>' +
+                        '<button class="modal-image-next" onclick="event.stopPropagation(); window._nextImage()">›</button>';
+                    imageNav.style.display = 'flex';
+                } else {
+                    imageNav.style.display = 'none';
+                }
+                modalOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+            function prevImage() {
+                var item = allItems[currentModalIndex];
+                var images = item.images || [];
+                if (images.length <= 1) return;
+                currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+                updateModalImage();
+            }
+            function nextImage() {
+                var item = allItems[currentModalIndex];
+                var images = item.images || [];
+                if (images.length <= 1) return;
+                currentImageIndex = (currentImageIndex + 1) % images.length;
+                updateModalImage();
+            }
+            function updateModalImage() {
+                var item = allItems[currentModalIndex];
+                var images = item.images || [];
+                var img = modalImage.querySelector('img');
+                if (img) {
+                    var imgSrc = images[currentImageIndex] || '';
+                    if (imgSrc) {
+                        getImageUrl(imgSrc).then(function(url) {
+                            if (allItems[currentModalIndex] === item) {
+                                img.src = url;
+                            }
+                        });
+                    } else {
+                        img.src = '';
+                    }
+                }
+                var counter = document.querySelector('.modal-image-counter');
+                if (counter) {
+                    counter.textContent = (currentImageIndex + 1) + ' / ' + images.length;
+                }
+            }
+
+            function closeModal() {
+                modalOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+                currentModalIndex = -1;
+            }
+
+            function getPromptText(item) {
+                var hasEn = item.promptEn && item.promptEn.trim();
+                var hasZh = item.promptZh && item.promptZh.trim();
+                if (hasEn && hasZh) {
+                    return item.promptEn + '\n\n' + item.promptZh;
+                } else if (hasEn) {
+                    return item.promptEn;
+                } else if (hasZh) {
+                    return item.promptZh;
+                }
+                return '';
+            }
+
+            function copyCurrentPrompt() {
+                if (currentModalIndex < 0) return;
+                var item = allItems[currentModalIndex];
+                var text = getPromptText(item);
+                navigator.clipboard.writeText(text).then(function() {
+                    showToast('提示词已复制到剪贴板');
+                }).catch(function() {
+                    showToast('复制失败，请手动选择文本');
+                });
+            }
+
+            function copyLangPrompt(lang) {
+                if (currentModalIndex < 0) return;
+                var item = allItems[currentModalIndex];
+                var text = lang === 'en' ? (item.promptEn || '') : (item.promptZh || '');
+                if (!text) return;
+                var label = lang === 'en' ? '英文' : '中文';
+                navigator.clipboard.writeText(text).then(function() {
+                    showToast(label + '提示词已复制到剪贴板');
+                }).catch(function() {
+                    showToast('复制失败，请手动选择文本');
+                });
+            }
+
+            function copyItemPrompt(index) {
+                if (index < 0 || index >= allItems.length) return;
+                var item = allItems[index];
+                var text = getPromptText(item);
+                navigator.clipboard.writeText(text).then(function() {
+                    showToast('提示词已复制到剪贴板');
+                }).catch(function() {
+                    showToast('复制失败，请手动选择文本');
+                });
+            }
+
+            // ==== Form Modal (新增/编辑) ====
+            function openForm(editIndex) {
+                editingId = null;
+                fDelete.style.display = 'none';
+                selectedFiles = [];
+                imagePreview.innerHTML = '';
+                fImage.value = '';
+                
+                if (editIndex !== undefined && editIndex >= 0) {
+                    // 编辑模式
+                    var item = allItems[editIndex];
+                    editingId = item.id;
+                    formTitle.textContent = '编辑作品';
+                    fTitle.value = item.title || '';
+                    fTags.value = (item.tags || []).join(', ');
+                    fModel.value = item.model || '';
+                    fDate.value = item.date || '';
+                    fPromptEn.value = item.promptEn || '';
+                    fPromptZh.value = item.promptZh || '';
+                    fDelete.style.display = 'inline-flex';
+                    
+                    // 如果已有图片，显示预览
+                    if (item.images && item.images.length > 0) {
+                        item.images.forEach(function(imgPath) {
+                            var previewItem = document.createElement('div');
+                            previewItem.className = 'image-preview-item';
+                            previewItem.innerHTML = '<img src="' + imgPath + '" alt="预览"><button class="image-preview-remove" type="button">×</button>';
+                            imagePreview.appendChild(previewItem);
+                            
+                            // 添加删除按钮事件
+                            previewItem.querySelector('.image-preview-remove').addEventListener('click', function() {
+                                previewItem.remove();
+                            });
+                        });
+                    }
+                } else {
+                    // 新增模式
+                    formTitle.textContent = '新增作品';
+                    fTitle.value = '';
+                    fTags.value = '';
+                    fModel.value = '';
+                    fDate.value = new Date().toISOString().split('T')[0];
+                    fPromptEn.value = '';
+                    fPromptZh.value = '';
+                }
+                formOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                setTimeout(function() { fTitle.focus(); }, 100);
+            }
+
+            function closeForm() {
+                formOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+                editingId = null;
+                selectedFiles = [];
+                imagePreview.innerHTML = '';
+                fImage.value = '';
+            }
+
+            // 文件选择相关函数
+            function generateTimestampFilename(originalFilename) {
+                var timestamp = Date.now().toString(16);
+                var random = Math.random().toString(16).substring(2, 8);
+                var extension = originalFilename.split('.').pop() || 'png';
+                // 统一转换为小写，避免大小写问题
+                return timestamp + random + '.' + extension.toLowerCase();
+            }
+
+            async function saveImagesToDir(fileNames) {
+                try {
+                    // 如果有授权的目录句柄，直接保存到 images/user/ 子目录
+                    if (directoryHandle) {
+                        const imagesDir = await directoryHandle.getDirectoryHandle('images', { create: true });
+                        const userDir = await imagesDir.getDirectoryHandle('user', { create: true });
+                        for (var i = 0; i < fileNames.length; i++) {
+                            var item = fileNames[i];
+                            var fileHandle = await userDir.getFileHandle(item.name, { create: true });
+                            var writable = await fileHandle.createWritable();
+                            await writable.write(item.file);
+                            await writable.close();
+                        }
+                        showToast('图片已保存到 images/user/ 目录');
+                        return true;
+                    }
+                    // 降级：使用本地 images/user/ 目录
+                    if (!imagesDirHandle) {
+                        imagesDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                    }
+                    for (var i = 0; i < fileNames.length; i++) {
+                        var item = fileNames[i];
+                        var fileHandle = await imagesDirHandle.getFileHandle(item.name, { create: true });
+                        var writable = await fileHandle.createWritable();
+                        await writable.write(item.file);
+                        await writable.close();
+                    }
+                    showToast('图片已保存到 images/ 目录');
+                    return true;
+                } catch (e) {
+                    if (e.name !== 'AbortError') {
+                        console.error('保存图片失败:', e);
+                    }
+                    imagesDirHandle = null;
+                    return false;
+                }
+            }
+
+            function handleFileSelect(files) {
+                if (!files || files.length === 0) return;
+                
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    if (!file.type.startsWith('image/')) continue;
+                    
+                    selectedFiles.push(file);
+                    
+                    // 创建预览
+                    var previewItem = document.createElement('div');
+                    previewItem.className = 'image-preview-item';
+                    
+                    var img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.alt = file.name;
+                    
+                    var removeBtn = document.createElement('button');
+                    removeBtn.className = 'image-preview-remove';
+                    removeBtn.type = 'button';
+                    removeBtn.textContent = '×';
+                    removeBtn.addEventListener('click', (function(idx, item) {
+                        return function() {
+                            selectedFiles.splice(idx, 1);
+                            item.remove();
+                        };
+                    })(selectedFiles.length - 1, previewItem));
+                    
+                    previewItem.appendChild(img);
+                    previewItem.appendChild(removeBtn);
+                    imagePreview.appendChild(previewItem);
+                }
+            }
+
+            // 文件选择事件监听
+            fImageBtn.addEventListener('click', function() {
+                fImage.click();
+            });
+
+            fImage.addEventListener('change', function(e) {
+                handleFileSelect(e.target.files);
+                fImage.value = ''; // 重置以允许再次选择相同文件
+            });
+
+            async function saveForm() {
+                var title = fTitle.value.trim();
+                if (!title) { showToast('请输入作品标题'); fTitle.focus(); return; }
+
+                var tagsRaw = fTags.value.trim();
+                var tags = tagsRaw ? tagsRaw.split(/[,，]/).map(function(t) { return t.trim(); }).filter(Boolean) : [];
+
+                var data = {
+                    title: title,
+                    images: [],
+                    tags: tags,
+                    model: fModel.value.trim(),
+                    date: fDate.value.trim(),
+                    promptEn: fPromptEn.value.trim(),
+                    promptZh: fPromptZh.value.trim()
+                };
+
+                // 处理文件上传
+                if (selectedFiles.length > 0) {
+                    var imagePaths = [];
+                    var fileNames = [];
+                    
+                    for (var i = 0; i < selectedFiles.length; i++) {
+                        var file = selectedFiles[i];
+                        var newFilename = generateTimestampFilename(file.name);
+                        imagePaths.push('images/user/' + newFilename);
+                        fileNames.push({ name: newFilename, file: file });
+                    }
+                    
+                    data.images = imagePaths;
+                    
+                    // 尝试自动保存图片到 images 目录
+                    var saved = await saveImagesToDir(fileNames);
+                    if (!saved) {
+                        // 降级：提示用户手动操作
+                        var fileList = fileNames.map(function(item, idx) {
+                            return (idx + 1) + '. ' + item.name;
+                        }).join('\n');
+                        
+                        var message = '自动保存失败，请手动操作：\n\n' +
+                            '1. 将图片文件重命名为：\n' + fileList + '\n\n' +
+                            '2. 将重命名后的文件放入 images/user/ 目录\n\n' +
+                            '3. 确保文件名大小写完全匹配（包括扩展名）\n\n' +
+                            '4. 点击"确定"继续保存作品信息';
+                        
+                        if (!confirm(message)) {
+                            return;
+                        }
+                    }
+                } else if (editingId !== null) {
+                    // 编辑模式且没有新文件，保留原有图片
+                    for (var i = 0; i < allItems.length; i++) {
+                        if (allItems[i].id === editingId) {
+                            data.images = allItems[i].images || [];
+                            break;
+                        }
+                    }
+                }
+
+                if (editingId !== null) {
+                    // 编辑
+                    if (isDefaultItem(editingId)) {
+                        // 编辑默认数据：记录修改
+                        markEdited(editingId, data);
+                    } else {
+                        // 编辑用户数据：直接更新
+                        updateNewItem(editingId, data);
+                    }
+                    showToast('作品已更新');
+                } else {
+                    // 新增：生成新的 ID（确保不与已有数据冲突）
+                    var maxId = allItems.length > 0 ? Math.max.apply(null, allItems.map(function(item) { return item.id; })) : 0;
+                    var newId = maxId + 1;
+                    
+                    var newItem = {
+                        id: newId,
+                        images: data.images,
+                        title: data.title,
+                        tags: data.tags,
+                        model: data.model,
+                        date: data.date,
+                        promptEn: data.promptEn,
+                        promptZh: data.promptZh
+                    };
+                    addNewItem(newItem);
+                    showToast('作品已添加');
+                }
+
+                // 如果没有关联文件，提示用户选择
+                if (!dataFileHandle && isFSSupported) {
+                    if (confirm('是否关联 data.json 文件？关联后保存会自动写入文件。')) {
+                        try {
+                            const [handle] = await window.showOpenFilePicker({
+                                types: [{
+                                    description: 'JavaScript 文件',
+                                    accept: { 'application/javascript': ['.js'] }
+                                }],
+                                multiple: false
+                            });
+                            await storeFileHandle(handle);
+                            dataFileHandle = handle;
+                            updateFileStatusUI();
+                        } catch (e) {
+                            if (e.name === 'AbortError') {
+                                showToast('已取消关联，数据仅保存在浏览器中');
+                            }
+                        }
+                    }
+                }
+
+                saveUserData();
+                closeForm();
+                renderAll();
+            }
+
+            function deleteCurrent() {
+                if (editingId === null) return;
+                if (!confirm('确定要删除这件作品吗？此操作不可撤销。')) return;
+
+                if (isDefaultItem(editingId)) {
+                    // 删除默认数据：标记为已删除
+                    markDeleted(editingId);
+                } else {
+                    // 删除用户数据：直接移除
+                    deleteNewItem(editingId);
+                }
+                
+                // 如果有关联的文件，自动保存到文件
+                if (dataFileHandle) {
+                    saveDataToFile().catch(e => console.error('删除后保存文件失败:', e));
+                }
+                closeForm();
+                renderAll();
+                showToast('作品已删除');
+            }
+
+            // 页面卸载时清理对象URL，避免内存泄漏
+            window.addEventListener('beforeunload', revokeAllImageUrls);
+
+            // ==== Modal Events ====
+            modalClose.addEventListener('click', closeModal);
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) closeModal();
+            });
+            modalPrev.addEventListener('click', function() {
+                if (currentModalIndex > 0) openModal(currentModalIndex - 1);
+            });
+            modalNext.addEventListener('click', function() {
+                if (currentModalIndex < allItems.length - 1) openModal(currentModalIndex + 1);
+            });
+            modalCopy.addEventListener('click', copyCurrentPrompt);
+            modalEdit.addEventListener('click', function() {
+                if (currentModalIndex >= 0) {
+                    var currentIndex = currentModalIndex;
+                    closeModal();
+                    openForm(currentIndex);
+                }
+            });
+            searchInput.addEventListener('input', function() {
+                renderGallery();
+                updateStats();
+            });
+
+            // ==== Form Events ====
+            fSave.addEventListener('click', saveForm);
+            formClose.addEventListener('click', closeForm);
+            formCloseBtn.addEventListener('click', closeForm);
+            formOverlay.addEventListener('click', function(e) {
+                if (e.target === formOverlay) closeForm();
+            });
+            fDelete.addEventListener('click', deleteCurrent);
+
+            // 新增按钮
+            document.getElementById('btnAdd').addEventListener('click', function() {
+                openForm();
+            });
+
+            // 导出数据按钮
+            document.getElementById('btnExport').addEventListener('click', function() {
+                var jsContent = '// ==========================================\n' +
+                    '// AI 绘画作品元数据（图片路径、标题、标签等）\n' +
+                    '// 直接编辑此文件添加新作品\n' +
+                    '// 每个作品可包含多张图片\n' +
+                    '// promptEn: 英文提示词\n' +
+                    '// promptZh: 中文提示词\n' +
+                    '// 两者可以同时存在，也可以只存在一个\n' +
+                    '// ==========================================\n' +
+                    'const GALLERY_DATA = ' + JSON.stringify(allItems.map(function(item) {
+                        return {
+                            id: item.id,
+                            images: item.images || [],
+                            promptEn: item.promptEn || '',
+                            promptZh: item.promptZh || '',
+                            title: item.title,
+                            tags: item.tags || [],
+                            model: item.model || '',
+                            date: item.date || ''
+                        };
+                    }), null, 2) + ';\n';
+                
+                var blob = new Blob([jsContent], { type: 'application/javascript' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'data.js';
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast('data.js 已导出，请替换项目中的 data.js');
+            });
+
+            // 文件夹信息点击事件 - 显示下拉或打开选择器
+            var folderDropdown = document.getElementById('folderDropdown');
+            var folderDropdownName = document.getElementById('folderDropdownName');
+            var folderDropdownBtn = document.getElementById('folderDropdownBtn');
+            var folderDropdownRevoke = document.getElementById('folderDropdownRevoke');
+
+            document.getElementById('folderInfo').addEventListener('click', function(e) {
+                // 如果点击的是下拉内的按钮，不处理
+                if (e.target.closest('.folder-dropdown')) return;
+                if (!isFSSupported) return;
+                if (currentDirName) {
+                    // 已授权 - 显示下拉弹窗
+                    folderDropdownName.textContent = currentDirName;
+                    folderDropdown.classList.toggle('show');
+                } else {
+                    // 未授权 - 直接打开选择器
+                    selectDataFile();
+                }
+            });
+
+            // 更换文件夹
+            folderDropdownBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                folderDropdown.classList.remove('show');
+                selectDataFile();
+            });
+
+            // 取消授权
+            folderDropdownRevoke.addEventListener('click', async function(e) {
+                e.stopPropagation();
+                folderDropdown.classList.remove('show');
+                try {
+                    await removeDirectoryHandle();
+                    currentDirName = null;
+                    dataFileHandle = null;
+                    directoryHandle = null;
+                    dataLoadedFromFile = false;
+                    fileData = null;
+                    updateFileStatusUI();
+                    showToast('已取消文件夹授权');
+                } catch (err) {
+                    console.error('取消授权失败:', err);
+                }
+            });
+
+            // 点击外部关闭下拉
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.folder-info')) {
+                    folderDropdown.classList.remove('show');
+                }
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // 表单弹窗快捷键
+                if (formOverlay.classList.contains('active')) {
+                    if (e.key === 'Escape') closeForm();
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') saveForm();
+                    return;
+                }
+                // 详情弹窗快捷键
+                if (!modalOverlay.classList.contains('active')) return;
+                if (e.key === 'Escape') closeModal();
+                if (e.key === 'ArrowLeft' && currentModalIndex > 0) openModal(currentModalIndex - 1);
+                if (e.key === 'ArrowRight' && currentModalIndex < allItems.length - 1) openModal(currentModalIndex + 1);
+                if ((e.ctrlKey || e.metaKey) && e.key === 'c' && currentModalIndex >= 0) {
+                    copyCurrentPrompt();
+                }
+            });
+
+            // ==== Welcome Overlay (首次打开授权) ====
+            var welcomeOverlay = document.getElementById('welcomeOverlay');
+            var welcomeError = document.getElementById('welcomeError');
+            var welcomeStatus = document.getElementById('welcomeStatus');
+            var btnAuthorize = document.getElementById('btnAuthorize');
+            var btnSkip = document.getElementById('btnSkip');
+            var DIR_HANDLE_KEY = 'ai_gallery_dir_handle';
+            
+            // 检查是否已授权目录
+            async function checkDirectoryAuthorization() {
+                try {
+                    if (!db) await openDB();
+                    return new Promise((resolve, reject) => {
+                        const transaction = db.transaction(STORE_NAME, 'readonly');
+                        const store = transaction.objectStore(STORE_NAME);
+                        const request = store.get(DIR_HANDLE_KEY);
+                        request.onsuccess = () => resolve(request.result);
+                        request.onerror = () => reject(request.error);
+                    });
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            // 存储目录句柄
+            async function storeDirectoryHandle(handle) {
+                try {
+                    if (!db) await openDB();
+                    return new Promise((resolve, reject) => {
+                        const transaction = db.transaction(STORE_NAME, 'readwrite');
+                        const store = transaction.objectStore(STORE_NAME);
+                        const request = store.put(handle, DIR_HANDLE_KEY);
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+                } catch (e) {
+                    console.error('存储目录句柄失败:', e);
+                }
+            }
+
+            // 删除目录句柄
+            async function removeDirectoryHandle() {
+                try {
+                    if (!db) await openDB();
+                    return new Promise((resolve, reject) => {
+                        const transaction = db.transaction(STORE_NAME, 'readwrite');
+                        const store = transaction.objectStore(STORE_NAME);
+                        const request = store.delete(DIR_HANDLE_KEY);
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+                } catch (e) {
+                    console.error('删除目录句柄失败:', e);
+                }
+            }
+
+            // 更新欢迎界面状态
+            function updateWelcomeStatus(authorized, dirName) {
+                if (authorized) {
+                    welcomeStatus.classList.add('authorized');
+                    welcomeStatus.innerHTML = '<span class="status-dot"></span><span>已授权: ' + (dirName || '本地文件夹') + '</span>';
+                    btnAuthorize.textContent = '✓ 已授权';
+                    btnAuthorize.disabled = true;
+                } else {
+                    welcomeStatus.classList.remove('authorized');
+                    welcomeStatus.innerHTML = '<span class="status-dot"></span><span>尚未授权本地文件夹</span>';
+                    btnAuthorize.innerHTML = '<span>📂</span> 授权本地文件夹';
+                    btnAuthorize.disabled = false;
+                }
+            }
+
+            // 显示欢迎界面
+            function showWelcomeOverlay() {
+                welcomeOverlay.classList.add('active');
+                welcomeOverlay.classList.remove('hidden');
+            }
+
+            // 隐藏欢迎界面
+            function hideWelcomeOverlay() {
+                welcomeOverlay.classList.remove('active');
+                welcomeOverlay.classList.add('hidden');
+            }
+
+            // 授权本地文件夹
+            async function authorizeDirectory() {
+                try {
+                    welcomeError.classList.remove('show');
+                    
+                    // 检查浏览器是否支持 File System Access API
+                    if (!('showDirectoryPicker' in window)) {
+                        welcomeError.textContent = '你的浏览器不支持 File System Access API，请使用 Chrome 或 Edge 浏览器';
+                        welcomeError.classList.add('show');
+                        return;
+                    }
+
+                    // 请求用户选择目录
+                    const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                    
+                    // 存储目录句柄
+                    await storeDirectoryHandle(dirHandle);
+                    
+                    // 缓存目录句柄
+                    directoryHandle = dirHandle;
+                    
+                    // 更新状态
+                    updateWelcomeStatus(true, dirHandle.name);
+                    
+                    // 更新当前文件夹名称
+                    currentDirName = dirHandle.name;
+                    updateFileStatusUI();
+                    
+                    showToast('已成功授权本地文件夹');
+                    
+                    // 延迟隐藏欢迎界面
+                    setTimeout(function() {
+                        hideWelcomeOverlay();
+                        // 加载目录中的数据
+                        loadFromDirectory(dirHandle);
+                    }, 1000);
+                    
+                } catch (e) {
+                    if (e.name === 'AbortError') {
+                        // 用户取消了选择
+                        welcomeError.textContent = '已取消授权';
+                        welcomeError.classList.add('show');
+                    } else {
+                        welcomeError.textContent = '授权失败: ' + e.message;
+                        welcomeError.classList.add('show');
+                    }
+                }
+            }
+
+            // 从目录加载数据
+            async function loadFromDirectory(dirHandle) {
+                try {
+                    // 检查是否有 data.js 文件
+                    let fileHandle;
+                    try {
+                        fileHandle = await dirHandle.getFileHandle('data.js');
+                    } catch (e) {
+                        // 文件不存在，用默认数据创建 data.js
+                        fileHandle = await dirHandle.getFileHandle('data.js', { create: true });
+                        const writable = await fileHandle.createWritable();
+                        // 将图片路径从 images/default/ 改为 images/user/
+                        const defaultData = (DEFAULT_GALLERY_DATA || []).map(function(item) {
+                            var updated = Object.assign({}, item);
+                            if (updated.images && updated.images.length > 0) {
+                                updated.images = updated.images.map(function(imgPath) {
+                                    return imgPath.replace('images/default/', 'images/user/');
+                                });
+                            }
+                            return updated;
+                        });
+                        await writable.write('// ==========================================\n' +
+                            '// AI 绘画作品元数据（图片路径、标题、标签等）\n' +
+                            '// 直接编辑此文件添加新作品\n' +
+                            '// ==========================================\n' +
+                            'const GALLERY_DATA = ' + JSON.stringify(defaultData, null, 2) + ';\n');
+                        await writable.close();
+                        
+                        // 创建 images/user 目录并复制默认图片
+                        var copySuccess = false;
+                        var copyFailed = false;
+                        try {
+                            const imagesDir = await dirHandle.getDirectoryHandle('images', { create: true });
+                            const userDir = await imagesDir.getDirectoryHandle('user', { create: true });
+                            
+                            // 构建绝对 URL 基础路径
+                            var baseUrl = window.location.href;
+                            
+                            // 从项目中获取默认图片并保存到 images/user/
+                            var defaultImages = DEFAULT_GALLERY_DATA || [];
+                            for (var i = 0; i < defaultImages.length; i++) {
+                                var imgItem = defaultImages[i];
+                                if (imgItem.images && imgItem.images.length > 0) {
+                                    for (var j = 0; j < imgItem.images.length; j++) {
+                                        var imgPath = imgItem.images[j]; // 原始路径 images/default/xxx.png
+                                        var fileName = imgPath.split('/').pop();
+                                        try {
+                                            var fullUrl = new URL(imgPath, baseUrl).href;
+                                            var response = await fetch(fullUrl);
+                                            if (response.ok) {
+                                                var blob = await response.blob();
+                                                var fileHandle2 = await userDir.getFileHandle(fileName, { create: true });
+                                                var writable2 = await fileHandle2.createWritable();
+                                                await writable2.write(blob);
+                                                await writable2.close();
+                                                copySuccess = true;
+                                            } else {
+                                                copyFailed = true;
+                                            }
+                                        } catch (imgErr) {
+                                            console.warn('复制默认图片失败:', fileName, imgErr);
+                                            copyFailed = true;
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (dirErr) { 
+                            console.warn('创建目录失败:', dirErr); 
+                            copyFailed = true;
+                        }
+                        
+                        if (copySuccess) {
+                            showToast('已初始化并复制默认图片');
+                        } else if (copyFailed) {
+                            showToast('数据已初始化，但图片复制失败。请通过 HTTP 服务器启动项目后重新授权文件夹');
+                        } else {
+                            showToast('已从默认数据初始化');
+                        }
+                    }
+                    
+                    // 读取 data.js
+                    const file = await fileHandle.getFile();
+                    const content = await file.text();
+                    
+                    // 解析数据
+                    const match = content.match(/const\s+GALLERY_DATA\s*=\s*(\[.*\]);/s);
+                    if (match) {
+                        const data = JSON.parse(match[1]);
+                        // 更新 allItems
+                        allItems = data.map(function(item) {
+                            return {
+                                id: item.id,
+                                images: item.images || [],
+                                title: item.title,
+                                tags: item.tags || [],
+                                model: item.model || '',
+                                date: item.date || '',
+                                promptEn: item.promptEn || '',
+                                promptZh: item.promptZh || '',
+                                _original: true
+                            };
+                        });
+                        
+                        // 保存文件数据副本，供 mergeData 使用
+                        fileData = allItems.map(function(item) {
+                            return Object.assign({}, item);
+                        });
+                        
+                        // 文件是数据源，清空 localStorage 中的用户增量数据
+                        userData = { items: [], edits: {}, deleted: [] };
+                        saveUserDataToStorage();
+                        
+                        // 保存文件句柄
+                        dataFileHandle = fileHandle;
+                        dataLoadedFromFile = true;
+                        
+                        // 渲染
+                        renderAll();
+                        updateFileStatusUI();
+                        
+                        showToast('已从本地文件夹加载数据');
+                    }
+                } catch (e) {
+                    console.error('从目录加载数据失败:', e);
+                    showToast('加载数据失败: ' + e.message);
+                }
+            }
+
+            // 初始化欢迎界面
+            async function initWelcome() {
+                // 检查浏览器支持
+                if (!('showDirectoryPicker' in window)) {
+                    hideWelcomeOverlay();
+                    updateFileStatusUI();
+                    return;
+                }
+                
+                try {
+                    const dirHandle = await checkDirectoryAuthorization();
+                    if (dirHandle) {
+                        // 已有授权，验证权限
+                        const opts = { mode: 'readwrite' };
+                        if ((await dirHandle.queryPermission(opts)) === 'granted') {
+                            // 缓存目录句柄
+                            directoryHandle = dirHandle;
+                            updateWelcomeStatus(true, dirHandle.name);
+                            // 更新当前文件夹名称
+                            currentDirName = dirHandle.name;
+                            updateFileStatusUI();
+                            hideWelcomeOverlay();
+                            // 从目录加载数据
+                            loadFromDirectory(dirHandle);
+                            return;
+                        } else {
+                            // 权限已过期，需要重新授权
+                            updateWelcomeStatus(false);
+                        }
+                    }
+                    
+                    // 显示欢迎界面
+                    updateFileStatusUI();
+                    showWelcomeOverlay();
+                    
+                } catch (e) {
+                    console.error('检查授权状态失败:', e);
+                    showWelcomeOverlay();
+                }
+            }
+
+            // 绑定事件
+            btnAuthorize.addEventListener('click', authorizeDirectory);
+            btnSkip.addEventListener('click', function() {
+                hideWelcomeOverlay();
+                // 隐藏文件夹信息
+                const folderInfo = document.getElementById('folderInfo');
+                if (folderInfo) folderInfo.style.display = 'none';
+                // 关闭下拉
+                if (folderDropdown) folderDropdown.classList.remove('show');
+                showToast('将使用浏览器本地存储');
+            });
+
+            // 启动初始化
+            initWelcome();
+
+            // ==== Init ====
+            renderAll();
+
+            // Expose to window for onclick in HTML
+            window._openModal = openModal;
+            window._copyItemPrompt = copyItemPrompt;
+            window._copyLangPrompt = copyLangPrompt;
+            window._prevImage = prevImage;
+            window._nextImage = nextImage;
+            window._confirmDelete = confirmDelete;
+
+        })();
+    </script>
+</body>
+</html>

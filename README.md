@@ -5,9 +5,9 @@
 ## ✨ 特点
 
 - **零依赖**：纯 HTML/CSS/JavaScript，无需安装任何框架或依赖
-- **即开即用**：双击 `gallery.html` 即可使用，无需服务器
+- **多版本支持**：提供 JSON 版本（推荐）和单 HTML 版本
 - **本地存储**：支持授权本地文件夹存储数据，数据完全在你本地（Chrome/Edge）
-- **自动保存**：编辑后自动保存到 data.js，无需手动操作
+- **自动保存**：编辑后自动保存到 data.json，无需手动操作
 - **数据分离**：默认数据与用户数据分离管理，保护原始数据完整性
 - **多图支持**：每个作品可包含多张图片，支持图片切换导航
 - **响应式设计**：适配桌面端和移动端
@@ -22,7 +22,7 @@
 # Windows
 双击 start.bat
 
-# 然后浏览器打开 http://localhost:8080/gallery.html
+# 然后浏览器打开 http://localhost:8080/gallery-json.html
 ```
 
 ### 方式二：手动启动
@@ -34,24 +34,25 @@ python -m http.server 8080
 # 或者使用 Node.js
 npx http-server -p 8080
 
-# 然后访问 http://localhost:8080/gallery.html
+# 然后访问 http://localhost:8080/gallery-json.html
 ```
 
-### 方式三：直接打开
+### 方式三：直接打开（无需服务器）
 
-双击 `gallery.html` 文件即可在浏览器中打开（部分功能受限）
+双击 `gallery-standalone.html` 文件即可在浏览器中打开（部分功能受限）
 
 ## 📁 目录结构
 
 ```
 xxl-ai-gallery/
-├── gallery.html      # 主页面（画廊展示 + 搜索 + 详情弹窗）
-├── data.js           # 用户作品数据（首次使用时自动初始化）
-├── data_default.js   # 默认示例数据（只读，用于初始化）
-├── data.json         # 作品数据（JSON 格式，备用）
-├── start.bat         # Windows 一键启动脚本
-├── TECH_RESEARCH.md  # 技术调研文档
-└── images/           # 存放 AI 生成的图片
+├── gallery-json.html      # 推荐版本（使用 data.json，需 HTTP 服务器）
+├── gallery-standalone.html # 单 HTML 版本（双击即可使用）
+├── data_default.json       # 默认示例数据（只读，用于初始化）
+├── data_default.js         # 默认示例数据（JS 格式，单 HTML 版本使用）
+├── data.json               # 作品数据（JSON 格式，授权后自动创建）
+├── start.bat               # Windows 一键启动脚本
+├── TECH_RESEARCH.md        # 技术调研文档
+└── images/                 # 存放 AI 生成的图片
 ```
 
 ## 📖 使用说明
@@ -75,17 +76,17 @@ xxl-ai-gallery/
 
 项目采用**双文件数据管理**架构：
 
-- **`data_default.js`**：默认示例数据（只读），包含初始的示例作品
-- **`data.js`**：用户实际使用的数据文件
+- **`data_default.json`**：默认示例数据（只读），包含初始的示例作品
+- **`data.json`**：用户实际使用的数据文件（授权后自动创建）
 
 **首次使用流程**：
-1. 页面打开时检查 `data.js` 是否有数据
-2. 如果 `data.js` 为空，自动将 `data_default.js` 中的默认数据添加到 `data.js`
-3. 用户后续添加、编辑、删除的数据都会保存到 `data.js`
+1. 页面打开时检查是否已授权本地文件夹
+2. 首次访问时会提示授权本地文件夹，授权后自动创建 `data.json`
+3. 用户后续添加、编辑、删除的数据都会保存到 `data.json`
 
 **数据分离的好处**：
-- `data_default.js` 作为默认数据源，不会被修改
-- 用户可以随时重置到初始状态（清空 `data.js` 或清除浏览器 localStorage）
+- `data_default.json` 作为默认数据源，不会被修改
+- 用户可以随时重置到初始状态（删除 `data.json` 或清除浏览器 localStorage）
 - 便于版本管理和数据备份
 
 ### 浏览作品
@@ -110,12 +111,12 @@ xxl-ai-gallery/
 3. 选择图片文件（支持多选）
 4. 点击"保存"
 
-首次添加时会提示关联 `data.js` 文件，关联后后续修改会自动保存到文件。
+如果已授权本地文件夹，修改会自动保存到 `data.json`。
 
-**方式二：手动编辑 data.js**
+**方式二：手动编辑 data.json**
 
 1. 将图片放入 `images/` 目录
-2. 在 `data.js` 中添加记录：
+2. 在 `data.json` 中添加记录：
 
 ```javascript
 {
@@ -139,7 +140,7 @@ xxl-ai-gallery/
 
 ### 导出数据
 
-点击顶部 💾 按钮可导出当前所有数据为 `data.js` 文件
+点击顶部 💾 按钮可导出当前所有数据为 `data.json` 文件
 
 ## ⌨️ 快捷键
 
