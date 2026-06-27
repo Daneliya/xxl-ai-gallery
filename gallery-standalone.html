@@ -1818,6 +1818,11 @@
             // 选择数据文件
             async function selectDataFile() {
                 try {
+                    // 检查浏览器是否支持 File System Access API
+                    if (!('showDirectoryPicker' in window)) {
+                        showToast('你的浏览器不支持文件夹选择功能，请使用 Chrome 或 Edge 浏览器', 'error');
+                        return;
+                    }
                     const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
                     await storeDirectoryHandle(dirHandle);
                     // 缓存目录句柄
@@ -2609,6 +2614,11 @@
                     }
                     // 降级：使用本地 images/user/ 目录
                     if (!imagesDirHandle) {
+                        // 检查浏览器是否支持 File System Access API
+                        if (!('showDirectoryPicker' in window)) {
+                            showToast('你的浏览器不支持文件夹选择功能，图片无法保存到本地文件夹', 'error');
+                            return false;
+                        }
                         imagesDirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
                     }
                     for (var i = 0; i < fileNames.length; i++) {
@@ -3043,7 +3053,7 @@
                     
                     // 检查浏览器是否支持 File System Access API
                     if (!('showDirectoryPicker' in window)) {
-                        welcomeError.textContent = '你的浏览器不支持 File System Access API，请使用 Chrome 或 Edge 浏览器';
+                        welcomeError.textContent = '你的浏览器不支持文件夹选择功能。请使用 Chrome 或 Edge 浏览器访问此页面。';
                         welcomeError.classList.add('show');
                         return;
                     }
@@ -3217,8 +3227,16 @@
             async function initWelcome() {
                 // 检查浏览器支持
                 if (!('showDirectoryPicker' in window)) {
-                    hideWelcomeOverlay();
-                    updateFileStatusUI();
+                    // 显示欢迎界面并提示浏览器不支持
+                    showWelcomeOverlay();
+                    welcomeError.textContent = '你的浏览器不支持文件夹选择功能。请使用 Chrome 或 Edge 浏览器访问此页面。';
+                    welcomeError.classList.add('show');
+                    // 禁用授权按钮
+                    if (btnAuthorize) {
+                        btnAuthorize.disabled = true;
+                        btnAuthorize.style.opacity = '0.5';
+                        btnAuthorize.style.cursor = 'not-allowed';
+                    }
                     return;
                 }
                 

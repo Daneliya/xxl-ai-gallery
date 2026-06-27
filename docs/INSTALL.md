@@ -27,6 +27,7 @@
 - **功能限制**：
   - File System Access API 仅支持 Chrome/Edge
   - 其他浏览器需使用手动导出功能
+  - **重要**：File System Access API 需要安全上下文（HTTPS 或 localhost），通过 HTTP 访问远程服务器时功能受限
 
 ## 🚀 安装方式
 
@@ -110,6 +111,8 @@
    - 双击 `gallery-standalone.html` 文件
    - 部分功能受限（无法自动保存）
 
+> **重要**：File System Access API（自动保存功能）需要安全上下文（HTTPS 或 localhost）。如果通过 HTTP 访问远程服务器，功能会受限。详细部署信息请参考 [云服务器部署指南](./DEPLOY.md)。
+
 ## ⚙️ 配置说明
 
 ### 数据存储位置
@@ -143,6 +146,19 @@
 - 以管理员身份运行（Windows）
 - 检查杀毒软件是否阻止应用运行
 - 查看错误日志（如果有）
+
+### 2. File System Access API 不可用
+
+**问题**: 提示"浏览器不支持文件夹选择功能"，但使用的是 Chrome/Edge
+
+**解决方案**:
+- **检查访问方式**：通过 `http://服务器IP:端口` 访问时，File System Access API 被浏览器禁用
+- **配置 HTTPS**（推荐）：配置 SSL 证书，使用 HTTPS 访问
+- **使用 Cloudflare Tunnel**：无需域名，创建免费 HTTPS 链接
+- **打包成桌面应用**：使用 Electron 打包，完整功能可用
+- **使用 localhost**：通过 `http://localhost:端口` 访问（仅本地开发）
+
+详细部署指南请参考 [云服务器部署指南](./DEPLOY.md)。
 
 ### 2. 数据丢失
 
@@ -219,9 +235,10 @@
 
 ### 文档资源
 
-- [README.md](./README.md) - 项目概述和快速开始
+- [README.md](../README.md) - 项目概述和快速开始
 - [BUILD.md](./BUILD.md) - 详细打包指南
 - [TECH_RESEARCH.md](./TECH_RESEARCH.md) - 技术调研文档
+- [DEPLOY.md](./DEPLOY.md) - 云服务器部署指南
 
 ### 问题反馈
 

@@ -1,6 +1,15 @@
+<div align="center">
+
 # AI 绘画作品集 (Prompt Gallery)
 
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Electron](https://img.shields.io/badge/Electron-28.0.0-47848f?logo=electron)](https://www.electronjs.org/)
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)]()
+[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)]()
+
 一个用于展示 AI 绘画作品及其提示词的静态画廊页面。支持作品管理、搜索筛选、提示词复制等功能，双击 HTML 文件即可使用。
+
+</div>
 
 ## ✨ 特点
 
@@ -68,8 +77,7 @@ xxl-ai-gallery/
 ├── docs/                   # 文档目录
 │   ├── BUILD.md            # 打包指南
 │   ├── INSTALL.md          # 安装指南
-│   ├── QUICKSTART.md       # 快速开始指南
-│   ├── ICONS.md            # 图标制作指南
+│   ├── DEPLOY.md           # 云服务器部署指南
 │   ├── TECH_RESEARCH.md    # 技术调研文档
 │   └── images/             # 文档图片
 └── scripts/                # 脚本目录
@@ -201,6 +209,72 @@ xxl-ai-gallery/
 
 > **提示**：Chrome/Edge 用户可享受自动保存功能，其他浏览器请使用手动导出。
 
+## 🌐 云服务器部署注意事项
+
+### 重要：File System Access API 安全上下文要求
+
+`window.showDirectoryPicker` (File System Access API) 在 Chrome/Edge 中**必须在安全上下文下才能使用**：
+
+| 访问方式 | localhost | HTTP 远程 | HTTPS 远程 |
+|---------|-----------|-----------|------------|
+| Chrome  | ✅ | ❌ | ✅ |
+| Edge    | ✅ | ❌ | ✅ |
+| Safari  | ❌ | ❌ | ❌ |
+
+**错误提示**：如果你通过 `http://服务器IP:端口` 访问，会提示"浏览器不支持文件夹选择功能"，但实际原因是**协议不安全**。
+
+### 解决方案
+
+#### 方案一：配置 HTTPS（推荐）
+- 配置 SSL 证书，使用 HTTPS 访问
+- File System Access API 完整可用
+- 需要域名或使用免费证书服务
+
+#### 方案二：使用 Cloudflare Tunnel（无需域名）
+```bash
+# 安装 cloudflared
+brew install cloudflare/cloudflare/cloudflared
+
+# 创建免费隧道（自动分配 trycloudflare.com 子域名）
+cloudflared tunnel --url http://localhost:8081
+```
+会生成一个 `https://xxx.trycloudflare.com` 的免费 HTTPS 链接。
+
+#### 方案三：打包成桌面应用（最佳方案）
+- 不需要域名、不需要 HTTPS
+- 完整文件系统访问权限
+- 双击即可运行，无需启动 HTTP 服务器
+
+```bash
+# 在项目目录下
+npm install
+npm run build:mac    # macOS
+npm run build:win    # Windows
+npm run build:linux  # Linux
+```
+
+### Nginx 配置示例
+
+如果你已有 SSL 证书，Nginx 配置参考：
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name your-domain.com;
+    
+    ssl_certificate /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+    
+    root /www/sites/xxl-ai-gallery/index;
+    
+    # 其他配置...
+}
+```
+
+### 详细部署指南
+
+更多部署细节，请参考 [云服务器部署指南](./docs/DEPLOY.md)。
+
 ## 🖥️ 桌面应用打包
 
 本项目支持打包成独立的桌面应用程序（Windows、macOS、Linux），无需浏览器即可运行。
@@ -261,7 +335,7 @@ npm run build:linux    # Linux
 
 - [技术调研文档](./docs/TECH_RESEARCH.md) - 数据持久化方案对比、技术细节与打包方案分析
 - [安装指南](./docs/INSTALL.md) - 详细安装和运行说明
-- [快速开始](./docs/QUICKSTART.md) - 5 分钟快速上手指南
+- [云服务器部署指南](./docs/DEPLOY.md) - 云服务器部署、HTTPS 配置和 File System Access API 问题解决
 
 ## 许可证
 

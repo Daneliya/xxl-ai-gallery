@@ -64,6 +64,7 @@ var response = await fetch(fullUrl); // 报错：Failed to fetch
 
 - ⚠️ 仅支持 Chrome/Edge（Safari/Firefox 不支持 File System Access API）
 - ⚠️ 首次使用需要用户授权选择文件
+- ⚠️ **需要安全上下文**：File System Access API 在 Chrome/Edge 中必须通过 HTTPS 或 localhost 访问，通过 HTTP 访问远程服务器时功能受限
 
 ### 兼容性处理
 
@@ -116,6 +117,23 @@ var response = await fetch(fullUrl); // 报错：Failed to fetch
 - **权限管理**：
   - `queryPermission()`：检查目录访问权限
   - 将目录句柄存储在 IndexedDB 中以持久化访问权限
+
+#### 安全上下文要求
+File System Access API 在 Chrome/Edge 中**必须在安全上下文下才能使用**：
+
+| 访问方式 | localhost | HTTP 远程 | HTTPS 远程 |
+|---------|-----------|-----------|------------|
+| Chrome  | ✅ | ❌ | ✅ |
+| Edge    | ✅ | ❌ | ✅ |
+| Safari  | ❌ | ❌ | ❌ |
+
+**解决方案**：
+1. **配置 HTTPS**（推荐）
+2. **使用 Cloudflare Tunnel**（无需域名）
+3. **打包成桌面应用**（Electron）
+4. **使用 localhost 访问**
+
+详细部署指南请参考 [云服务器部署指南](./DEPLOY.md)。
 
 #### 关键代码示例
 ```javascript
@@ -399,3 +417,7 @@ navigator.clipboard.writeText(text).then(function() {
 - [IndexedDB API - MDN](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)
 - [FileReader API - MDN](https://developer.mozilla.org/en-US/docs/Web/API/FileReader)
 - [Clipboard API - MDN](https://developer.mozilla.org/en-US/docs/Web/API/Clipboard_API)
+
+## 相关文档
+
+- [云服务器部署指南](./DEPLOY.md) - 云服务器部署、HTTPS 配置和 File System Access API 问题解决

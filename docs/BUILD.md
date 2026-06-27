@@ -93,16 +93,31 @@ dist/
 
 将图标文件放在 `images` 目录中：
 
-- **Windows**: `icon.ico`（256x256 像素）
-- **macOS**: `icon.icns`（512x512 像素）
+- **Windows**: `icon.ico`（256x256 像素，包含 16x16 ~ 256x256 多种尺寸）
+- **macOS**: `icon.icns`（512x512 像素，包含 16x16 ~ 1024x1024 多种尺寸）
 - **Linux**: `icon.png`（512x512 像素）
 
-**图标制作工具**：
-- Windows: [ICO Convert](https://icoconvert.com/)
-- macOS: [Image2Icon](https://www.img2icnsapp.com/)
-- 在线工具: [ConvertICO](https://convertico.com/)
+**在线转换工具**：
+- [ICO Convert](https://icoconvert.com/) - SVG/PNG 转 ICO
+- [Image2Icon](https://www.img2icnsapp.com/) - SVG/PNG 转 ICNS
+- [ConvertICO](https://convertico.com/) - 在线 ICO 转换
 
-**详细说明**：请参考 [图标制作指南](./ICONS.md)
+**命令行方式（ImageMagick）**：
+```bash
+# 安装 ImageMagick
+brew install imagemagick        # macOS
+choco install imagemagick       # Windows
+sudo apt-get install imagemagick # Linux
+
+# 将 SVG 转换为不同尺寸的 PNG
+convert images/icon.svg -resize 256x256 images/icon-256.png
+convert images/icon.svg -resize 512x512 images/icon-512.png
+
+# 创建 ICO 文件（Windows）
+convert images/icon-{16,32,48,64,128,256}.png images/icon.ico
+```
+
+**图标设计建议**：简洁明了、颜色鲜明、避免文字、保持一致性。项目中已包含示例 SVG 图标：`images/icon.svg`。
 
 ### 修改安装程序行为
 
