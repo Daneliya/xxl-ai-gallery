@@ -2,6 +2,8 @@
 
 # AI 绘画作品集 (Prompt Gallery)
 
+[English](./README_EN.md) | **简体中文** | [繁體中文](./README_TW.md)
+
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Electron](https://img.shields.io/badge/Electron-28.0.0-47848f?logo=electron)](https://www.electronjs.org/)
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)]()
@@ -41,10 +43,12 @@
 # Windows
 双击 scripts/start.bat
 
+# macOS / Linux
+chmod +x scripts/start.sh
+./scripts/start.sh
+
 # 然后浏览器打开 http://localhost:8080/gallery-json.html
 ```
-
-> **注意**：如果脚本中出现中文乱码，请确保使用 Windows PowerShell 或 CMD 运行，或者在脚本开头已添加 `chcp 65001 >nul` 设置 UTF-8 编码。
 
 ### 方式二：手动启动
 
