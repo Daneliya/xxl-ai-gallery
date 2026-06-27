@@ -121,7 +121,15 @@
             align-items: center;
             justify-content: space-between;
             height: 60px;
-            gap: 16px;
+            gap: 12px;
+        }
+
+        .search-sort-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            max-width: 520px;
         }
 
         .header-actions {
@@ -166,7 +174,6 @@
         /* ---- Search ---- */
         .search-wrap {
             flex: 1;
-            max-width: 480px;
             position: relative;
         }
 
@@ -199,6 +206,104 @@
             color: var(--text-secondary);
             font-size: 16px;
             pointer-events: none;
+        }
+
+        /* ---- Sort ---- */
+        .sort-wrap {
+            position: relative;
+            flex-shrink: 0;
+        }
+        .sort-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 40px;
+            padding: 0 14px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .sort-btn:hover {
+            border-color: var(--accent);
+        }
+        .sort-dropdown {
+            position: absolute;
+            top: calc(100% + 6px);
+            right: 0;
+            z-index: 100;
+            min-width: 150px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+        .sort-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 14px;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            text-align: left;
+            transition: var(--transition);
+        }
+        .sort-option:hover {
+            background: var(--accent-glow);
+        }
+        .sort-option.active {
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .sort-option-icon {
+            font-size: 11px;
+            opacity: 0.6;
+        }
+
+        /* ---- Column Switcher ---- */
+        .col-switcher {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2px;
+            flex-shrink: 0;
+        }
+        .col-btn {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .col-btn:hover {
+            color: var(--text);
+            background: var(--accent-glow);
+        }
+        .col-btn.active {
+            color: var(--accent);
+            background: var(--accent-glow);
+            font-weight: 600;
         }
 
         /* ---- Stats ---- */
@@ -274,9 +379,12 @@
 
         .gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
             gap: 20px;
         }
+        .gallery-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .gallery-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+        .gallery-grid.cols-5 { grid-template-columns: repeat(5, 1fr); }
+        .gallery-grid.cols-6 { grid-template-columns: repeat(6, 1fr); }
 
         /* ---- Card ---- */
         .card {
@@ -1495,20 +1603,27 @@
                 padding: 12px 0;
                 gap: 10px;
             }
-            .search-wrap {
+            .search-sort-group {
                 order: 3;
                 max-width: 100%;
                 width: 100%;
             }
+            .sort-dropdown {
+                right: auto;
+                left: 0;
+            }
             .header {
                 padding: 0 16px;
+            }
+            .col-switcher {
+                display: none;
             }
             .filter-bar {
                 padding: 12px 16px;
                 gap: 6px;
             }
             .gallery-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
                 gap: 14px;
             }
             .gallery-container {
@@ -1562,9 +1677,34 @@
                     <span>Prompt Gallery</span>
                 </div>
             </div>
-            <div class="search-wrap">
-                <input type="text" class="search-input" id="searchInput" placeholder="搜索提示词、标签或模型...">
-                <span class="search-icon">⌕</span>
+            <div class="search-sort-group">
+                <div class="search-wrap">
+                    <input type="text" class="search-input" id="searchInput" placeholder="搜索提示词、标签或模型...">
+                    <span class="search-icon">⌕</span>
+                </div>
+                <div class="sort-wrap" id="sortWrap">
+                    <button class="sort-btn" id="sortBtn">
+                        <span id="sortLabel">默认排序</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <div class="sort-dropdown" id="sortDropdown" style="display:none;">
+                        <button class="sort-option active" data-sort="default">
+                            默认排序
+                        </button>
+                        <button class="sort-option" data-sort="updatedAt-desc">
+                            最近更新
+                        </button>
+                        <button class="sort-option" data-sort="title-asc">
+                            名称排序
+                        </button>
+                    </div>
+                </div>
+                <div class="col-switcher" id="colSwitcher">
+                    <button class="col-btn" data-cols="3" title="3列">3</button>
+                    <button class="col-btn active" data-cols="4" title="4列">4</button>
+                    <button class="col-btn" data-cols="5" title="5列">5</button>
+                    <button class="col-btn" data-cols="6" title="6列">6</button>
+                </div>
             </div>
             <div class="header-stats" id="headerStats">
                 <div class="stat-item"><div class="stat-num" id="statCount">0</div><div class="stat-label">作品</div></div>
@@ -1696,8 +1836,12 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">日期</label>
-                    <input type="text" class="form-input" id="fDate" placeholder="2026-06-25">
+                    <label class="form-label">创建时间</label>
+                    <input type="text" class="form-input" id="fCreatedAt" placeholder="2026-06-25">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">更新时间</label>
+                    <input type="text" class="form-input" id="fUpdatedAt" placeholder="2026-06-25">
                 </div>
                 <div class="form-group">
                     <label class="form-label">英文提示词 / English Prompt</label>
@@ -1836,7 +1980,8 @@
                     title: item.title,
                     tags: item.tags || [],
                     model: item.model || '',
-                    date: item.date || '',
+                    createdAt: item.createdAt || '',
+                    updatedAt: item.updatedAt || '',
                     promptEn: item.promptEn || '',
                     promptZh: item.promptZh || ''
                 };
@@ -1930,7 +2075,8 @@
                             title: item.title,
                             tags: item.tags || [],
                             model: item.model || '',
-                            date: item.date || ''
+                            createdAt: item.createdAt || '',
+                            updatedAt: item.updatedAt || ''
                         };
                     }), null, 2));
                     await writable.close();
@@ -2075,6 +2221,7 @@
 
             var currentFilter = 'all';
             var currentLangFilter = 'all';
+            var currentSort = 'default';
             var currentModalIndex = -1;
 
             // ==== DOM ====
@@ -2105,7 +2252,8 @@
             var imagePreview = document.getElementById('imagePreview');
             var fTags = document.getElementById('fTags');
             var fModel = document.getElementById('fModel');
-            var fDate = document.getElementById('fDate');
+            var fCreatedAt = document.getElementById('fCreatedAt');
+            var fUpdatedAt = document.getElementById('fUpdatedAt');
             var fPromptEn = document.getElementById('fPromptEn');
             var fPromptZh = document.getElementById('fPromptZh');
             var fSave = document.getElementById('fSave');
@@ -2257,9 +2405,20 @@
                 }
                 if (search) {
                     items = items.filter(function(i) {
-                        return [i.title, i.promptEn, i.promptZh, i.model, i.date].concat(i.tags || []).join(' ').toLowerCase().indexOf(search) !== -1;
+                        return [i.title, i.promptEn, i.promptZh, i.model, i.createdAt, i.updatedAt].concat(i.tags || []).join(' ').toLowerCase().indexOf(search) !== -1;
                     });
                 }
+                // 排序
+                items = items.slice().sort(function(a, b) {
+                    switch (currentSort) {
+                        case 'updatedAt-desc':
+                            return (b.updatedAt || '').localeCompare(a.updatedAt || '');
+                        case 'title-asc':
+                            return (a.title || '').localeCompare(b.title || '', 'zh');
+                        default:
+                            return (a.id || 0) - (b.id || 0);
+                    }
+                });
                 return items;
             }
 
@@ -2522,7 +2681,8 @@
                     fTitle.value = item.title || '';
                     fTags.value = (item.tags || []).join(', ');
                     fModel.value = item.model || '';
-                    fDate.value = item.date || '';
+                    fCreatedAt.value = item.createdAt || '';
+                    fUpdatedAt.value = item.updatedAt || '';
                     fPromptEn.value = item.promptEn || '';
                     fPromptZh.value = item.promptZh || '';
                     fDelete.style.display = 'inline-flex';
@@ -2571,7 +2731,8 @@
                     fTitle.value = '';
                     fTags.value = '';
                     fModel.value = '';
-                    fDate.value = new Date().toISOString().split('T')[0];
+                    fCreatedAt.value = new Date().toISOString().split('T')[0];
+                    fUpdatedAt.value = new Date().toISOString().split('T')[0];
                     fPromptEn.value = '';
                     fPromptZh.value = '';
                     editingKeepImages = [];
@@ -2813,7 +2974,8 @@
                     images: [],
                     tags: tags,
                     model: fModel.value.trim(),
-                    date: fDate.value.trim(),
+                    createdAt: fCreatedAt.value.trim(),
+                    updatedAt: fUpdatedAt.value.trim(),
                     promptEn: fPromptEn.value.trim(),
                     promptZh: fPromptZh.value.trim()
                 };
@@ -2822,6 +2984,8 @@
                 var currentItemId;
                 if (editingId !== null) {
                     currentItemId = editingId;
+                    // 编辑时自动更新 updatedAt
+                    data.updatedAt = new Date().toISOString().split('T')[0];
                 } else {
                     var maxId = allItems.length > 0 ? Math.max.apply(null, allItems.map(function(item) { return item.id; })) : 0;
                     currentItemId = maxId + 1;
@@ -2904,7 +3068,8 @@
                         title: data.title,
                         tags: data.tags,
                         model: data.model,
-                        date: data.date,
+                        createdAt: data.createdAt,
+                        updatedAt: data.updatedAt,
                         promptEn: data.promptEn,
                         promptZh: data.promptZh
                     };
@@ -3003,6 +3168,58 @@
                 updateStats();
             });
 
+            // ==== Sort Events ====
+            var sortBtn = document.getElementById('sortBtn');
+            var sortDropdown = document.getElementById('sortDropdown');
+            var sortLabel = document.getElementById('sortLabel');
+            var sortOptions = sortDropdown.querySelectorAll('.sort-option');
+            var sortWrap = document.getElementById('sortWrap');
+
+            sortBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                var isOpen = sortDropdown.style.display !== 'none';
+                sortDropdown.style.display = isOpen ? 'none' : 'block';
+            });
+
+            sortOptions.forEach(function(opt) {
+                opt.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    currentSort = this.getAttribute('data-sort');
+                    sortLabel.textContent = this.textContent.trim();
+                    sortOptions.forEach(function(o) { o.classList.remove('active'); });
+                    this.classList.add('active');
+                    sortDropdown.style.display = 'none';
+                    renderGallery();
+                });
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!sortWrap.contains(e.target)) {
+                    sortDropdown.style.display = 'none';
+                }
+            });
+
+            // ==== Column Switcher Events ====
+            var currentCols = parseInt(localStorage.getItem('gallery-cols') || '4');
+            var galleryGrid = document.getElementById('galleryGrid');
+            var colBtns = document.querySelectorAll('.col-btn');
+
+            function applyCols(n) {
+                currentCols = n;
+                localStorage.setItem('gallery-cols', n);
+                galleryGrid.className = 'gallery-grid cols-' + n;
+                colBtns.forEach(function(btn) {
+                    btn.classList.toggle('active', parseInt(btn.dataset.cols) === n);
+                });
+            }
+            applyCols(currentCols);
+
+            colBtns.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    applyCols(parseInt(this.dataset.cols));
+                });
+            });
+
             // ==== Form Events ====
             fSave.addEventListener('click', saveForm);
             formClose.addEventListener('click', closeForm);
@@ -3028,7 +3245,8 @@
                         title: item.title,
                         tags: item.tags || [],
                         model: item.model || '',
-                        date: item.date || ''
+                        createdAt: item.createdAt || '',
+                        updatedAt: item.updatedAt || ''
                     };
                 }), null, 2);
                 
@@ -3210,7 +3428,8 @@
                             title: item.title,
                             tags: item.tags || [],
                             model: item.model || '',
-                            date: item.date || '',
+                            createdAt: item.createdAt || '',
+                            updatedAt: item.updatedAt || '',
                             promptEn: item.promptEn || '',
                             promptZh: item.promptZh || '',
                             _original: true
@@ -3262,7 +3481,8 @@
                             title: item.title,
                             tags: item.tags || [],
                             model: item.model || '',
-                            date: item.date || '',
+                            createdAt: item.createdAt || '',
+                            updatedAt: item.updatedAt || '',
                             promptEn: item.promptEn || '',
                             promptZh: item.promptZh || ''
                         };
@@ -3358,7 +3578,8 @@
                             title: item.title,
                             tags: item.tags || [],
                             model: item.model || '',
-                            date: item.date || '',
+                            createdAt: item.createdAt || '',
+                            updatedAt: item.updatedAt || '',
                             promptEn: item.promptEn || item.prompt || '',
                             promptZh: item.promptZh || '',
                             _original: true

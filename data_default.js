@@ -18,7 +18,8 @@ const DEFAULT_GALLERY_DATA = [
       "霓虹灯"
     ],
     "model": "Midjourney v6",
-    "date": "2025-12-15"
+    "createdAt": "2025-12-15",
+    "updatedAt": "2025-12-15"
   },
   {
     "id": 2,
@@ -35,7 +36,8 @@ const DEFAULT_GALLERY_DATA = [
       "光影"
     ],
     "model": "Stable Diffusion XL",
-    "date": "2025-12-20"
+    "createdAt": "2025-12-20",
+    "updatedAt": "2025-12-20"
   },
   {
     "id": 3,
@@ -52,7 +54,8 @@ const DEFAULT_GALLERY_DATA = [
       "白色"
     ],
     "model": "DALL-E 3",
-    "date": "2026-01-05"
+    "createdAt": "2026-01-05",
+    "updatedAt": "2026-01-05"
   },
   {
     "id": 4,
@@ -69,7 +72,8 @@ const DEFAULT_GALLERY_DATA = [
       "传统"
     ],
     "model": "Midjourney v6",
-    "date": "2026-01-12"
+    "createdAt": "2026-01-12",
+    "updatedAt": "2026-01-12"
   },
   {
     "id": 5,
@@ -86,7 +90,8 @@ const DEFAULT_GALLERY_DATA = [
       "星舰"
     ],
     "model": "Stable Diffusion XL",
-    "date": "2026-02-01"
+    "createdAt": "2026-02-01",
+    "updatedAt": "2026-02-01"
   },
   {
     "id": 6,
@@ -103,6 +108,7 @@ const DEFAULT_GALLERY_DATA = [
       "光影"
     ],
     "model": "Midjourney v6",
-    "date": "2026-02-18"
+    "createdAt": "2026-02-18",
+    "updatedAt": "2026-02-18"
   }
 ];

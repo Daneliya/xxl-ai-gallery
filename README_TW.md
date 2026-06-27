@@ -133,7 +133,8 @@ xxl-ai-gallery/
     "title": "作品標題",
     "tags": ["標籤1", "標籤2"],
     "model": "Midjourney v6",
-    "date": "2026-03-01"
+    "createdAt": "2026-03-01",
+    "updatedAt": "2026-03-01"
 }
 ```
 

@@ -162,7 +162,8 @@ xxl-ai-gallery/
     "title": "作品标题",
     "tags": ["标签1", "标签2"],
     "model": "Midjourney v6",
-    "date": "2026-03-01"
+    "createdAt": "2026-03-01",
+    "updatedAt": "2026-03-01"
 }
 ```
 
@@ -199,7 +200,8 @@ xxl-ai-gallery/
     "title": "作品标题",           // 作品标题
     "tags": ["标签1", "标签2"],    // 标签数组
     "model": "Midjourney v6",     // AI 模型名称
-    "date": "2026-03-01"          // 创作日期
+    "createdAt": "2026-03-01",        // 创建时间
+    "updatedAt": "2026-03-01"          // 更新时间
 }
 ```
 

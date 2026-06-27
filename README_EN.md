@@ -133,7 +133,8 @@ The project uses a **dual-file data management** architecture:
     "title": "Artwork Title",
     "tags": ["tag1", "tag2"],
     "model": "Midjourney v6",
-    "date": "2026-03-01"
+    "createdAt": "2026-03-01",
+    "updatedAt": "2026-03-01"
 }
 ```
 
@@ -157,7 +158,8 @@ The project uses a **dual-file data management** architecture:
     "title": "Artwork Title",     // Title
     "tags": ["tag1", "tag2"],     // Tags array
     "model": "Midjourney v6",     // AI model name
-    "date": "2026-03-01"          // Creation date
+    "createdAt": "2026-03-01",        // Creation date
+    "updatedAt": "2026-03-01"          // Update date
 }
 ```
 
